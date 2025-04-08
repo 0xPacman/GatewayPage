@@ -3,45 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tech Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <title>Dev Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     /* CSS Variables for themes */
     :root {
-      --bg-color: #121212;
-      --text-color: #e0e0e0;
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --card-hover: rgba(255, 255, 255, 0.06);
-      --accent-color: #bb86fc;
+      /* Dark Theme (Default) */
+      --bg-color: #1a1d24; /* Slightly softer black */
+      --text-color: #e0e1e6;
+      --card-bg: rgba(44, 48, 58, 0.7); /* Darker card, more blur */
+      --card-hover: rgba(54, 58, 68, 0.8);
+      --accent-color: #8a85ff; /* Brighter purple */
+      --accent-hover: #706cff;
       --input-bg: rgba(255, 255, 255, 0.1);
-      --header-bg: rgba(255, 255, 255, 0.05);
+      --header-bg: rgba(44, 48, 58, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --icon-color: #a0a3af;
+      --link-color: var(--accent-color);
+      --shadow-color: rgba(0, 0, 0, 0.3);
+      --spinner-color: var(--accent-color);
+      --scrollbar-thumb: #555;
+      --scrollbar-track: #333;
     }
+
     .light-mode {
-      --bg-color: #f5f5f5;
-      --text-color: #222;
-      --card-bg: #fff;
-      --card-hover: #f0f0f0;
-      --accent-color: #6200ea;
-      --input-bg: #e0e0e0;
-      --header-bg: #fff;
+      --bg-color: #f4f7fc; /* Light blueish grey */
+      --text-color: #2c3e50; /* Dark blue grey */
+      --card-bg: rgba(255, 255, 255, 0.8); /* Slightly transparent white */
+      --card-hover: rgba(255, 255, 255, 1);
+      --accent-color: #6a67ff; /* Adjusted purple for light mode */
+      --accent-hover: #504dff;
+      --input-bg: #e8eaf1;
+      --header-bg: rgba(255, 255, 255, 0.8);
+      --border-color: rgba(0, 0, 0, 0.1);
+      --icon-color: #5c677d;
+      --link-color: var(--accent-color);
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --spinner-color: var(--accent-color);
+      --scrollbar-thumb: #bdc3c7;
+      --scrollbar-track: #e8eaf1;
     }
-    
+
     /* Global Styles */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+    html {
+      scroll-behavior: smooth;
+    }
     body {
-      font-family: 'Share Tech Mono', monospace;
-      background: var(--bg-color);
+      /* Using Roboto for general UI, keeping Share Tech Mono for Time */
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-color);
       color: var(--text-color);
       overflow-x: hidden;
       line-height: 1.6;
-      transition: background 0.3s ease, color 0.3s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
-    
+
     /* Background Canvas */
     #background {
       position: fixed;
@@ -50,9 +72,10 @@
       width: 100vw;
       height: 100vh;
       z-index: -1;
-      background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+      /* Optional: Consider a simpler gradient if canvas is too distracting */
+      /* background: linear-gradient(135deg, var(--bg-color), #0a0a0a); */
     }
-    
+
     /* Main Container */
     .container {
       position: relative;
@@ -60,393 +83,709 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 20px;
-      gap: 20px;
+      padding: 25px;
+      gap: 25px;
+      max-width: 1600px; /* Max width for large screens */
+      margin: 0 auto;
     }
-    
+
     /* Header Styles */
     .header {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 15px;
-      padding: 20px;
+      gap: 20px;
+      padding: 20px 25px;
       background: var(--header-bg);
       border-radius: 15px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(8px);
-      transition: background 0.3s ease;
+      box-shadow: 0 6px 20px var(--shadow-color);
+      backdrop-filter: blur(10px); /* Increased blur */
+      border: 1px solid var(--border-color);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
-    .header:hover {
-      background: var(--card-hover);
+
+    .dashboard-title {
+       font-family: 'Share Tech Mono', monospace;
+       font-size: 1.8em;
+       font-weight: bold;
+       flex-basis: 100%; /* Take full width on small screens */
+       text-align: center;
+       margin-bottom: 10px;
     }
-    
-    .time-weather {
+
+    @media (min-width: 768px) {
+        .dashboard-title {
+            flex-basis: auto; /* Reset basis on larger screens */
+            text-align: left;
+            margin-bottom: 0;
+            margin-right: 20px; /* Add spacing */
+        }
+    }
+
+
+    .time-date-weather {
       flex: 1;
       text-align: center;
+      min-width: 200px; /* Ensure it doesn't get too small */
     }
     #time {
-      font-size: 3em;
-      margin-bottom: 10px;
-      text-shadow: 0 0 10px var(--accent-color);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 2.8em; /* Slightly smaller for balance */
+      margin-bottom: 5px;
+      color: var(--accent-color); /* Use accent color */
+      text-shadow: 0 0 8px rgba(var(--accent-color), 0.5);
     }
-    
+    #date {
+      font-size: 0.9em;
+      opacity: 0.8;
+    }
+    #weather {
+        margin-top: 8px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    #weather i {
+        font-size: 1.2em;
+        color: var(--accent-color);
+    }
+
     /* Theme Toggle Button */
     .theme-toggle {
-      background: var(--accent-color);
-      border: none;
-      color: var(--bg-color);
-      padding: 8px 15px;
-      border-radius: 5px;
-      font-size: 0.9em;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 1em;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .theme-toggle:hover {
       transform: scale(1.05);
+      background: var(--accent-color);
+      color: var(--bg-color);
+      border-color: var(--accent-color);
     }
-    
+    .theme-toggle .fa-sun { display: none; } /* Hide sun by default */
+    .light-mode .theme-toggle .fa-sun { display: inline-block; } /* Show sun in light */
+    .light-mode .theme-toggle .fa-moon { display: none; } /* Hide moon in light */
+
+
     /* Content Grid */
     .content {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Slightly larger min */
+      gap: 25px;
       flex: 1;
     }
-    
+
     /* Card Styles */
     .card {
       background: var(--card-bg);
       border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(8px);
+      padding: 25px;
+      box-shadow: 0 6px 20px var(--shadow-color);
+      backdrop-filter: blur(10px); /* Increased blur */
+      border: 1px solid var(--border-color);
       overflow: hidden;
-      transition: transform 0.3s ease, background 0.3s ease;
+      transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
       display: flex;
       flex-direction: column;
+      height: 450px; /* Fixed height for consistency */
     }
     .card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px var(--shadow-color);
       background: var(--card-hover);
     }
-    
+
     /* Card Header & Reddit Input */
     .card-header {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
       margin-bottom: 15px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 10px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
     }
-    .card-header > .header-top {
+    .card-header .header-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 15px; /* Space between title and input */
     }
+     .card-header .header-top div {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+     }
     .card-header i {
-      margin-right: 10px;
-      font-size: 24px;
+      font-size: 1.8em; /* Larger icons */
+      color: var(--icon-color);
+      width: 30px; /* Fixed width for alignment */
+      text-align: center;
     }
-    
+    .card-header h2 {
+        font-size: 1.3em;
+        font-weight: 700; /* Bolder header */
+    }
+
     /* Reddit Input in Card Header */
     .reddit-input {
       display: flex;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 10px; /* Spacing */
     }
-    .reddit-input input {
-      flex: 1;
-      padding: 8px;
+    .reddit-input input[type="text"] {
+      flex-grow: 1;
+      padding: 10px 12px;
       font-family: inherit;
-      border: none;
-      border-radius: 5px;
+      font-size: 0.9em;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       background: var(--input-bg);
       color: var(--text-color);
       outline: none;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
+    .reddit-input input[type="text"]:focus {
+        border-color: var(--accent-color);
+        background-color: transparent; /* Slight change on focus */
+    }
+    .reddit-input input[type="text"]:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     .reddit-input button {
-      padding: 8px 15px;
+      padding: 10px 15px;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       background: var(--accent-color);
-      color: var(--bg-color);
+      color: #ffffff; /* White text on accent */
       font-family: inherit;
+      font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .reddit-input button:hover {
-      background: #9a67ea;
-      transform: scale(1.02);
+    .reddit-input button:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: scale(1.03);
     }
-    
+     .reddit-input button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+     }
+    .reddit-input button .fa-spinner { display: none; } /* Hide spinner */
+    .reddit-input button.loading .fa-arrow-right { display: none; } /* Hide arrow when loading */
+    .reddit-input button.loading .fa-spinner { display: inline-block; animation: spin 1s linear infinite; } /* Show spinner */
+
+
     /* Posts List */
     .posts {
       overflow-y: auto;
-      flex: 1;
-      padding-right: 5px;
+      flex-grow: 1; /* Takes remaining space in card */
+      padding-right: 10px; /* Space for scrollbar */
+      margin-right: -5px; /* Visual tweak for scrollbar */
+    }
+     /* Custom Scrollbar */
+    .posts::-webkit-scrollbar {
+      width: 8px;
+    }
+    .posts::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+      border-radius: 4px;
+    }
+    .posts::-webkit-scrollbar-thumb {
+      background-color: var(--scrollbar-thumb);
+      border-radius: 4px;
+      border: 2px solid var(--scrollbar-track);
     }
     .post-item {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      transition: background 0.3s ease;
+      padding: 12px 5px 12px 0; /* Added left padding */
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.2s ease;
     }
     .post-item:last-child {
       border-bottom: none;
     }
     .post-item:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background-color: rgba(255, 255, 255, 0.04); /* Subtle hover */
+    }
+    .light-mode .post-item:hover {
+      background-color: rgba(0, 0, 0, 0.03);
     }
     .post-item a {
-      color: var(--accent-color);
+      color: var(--link-color);
       text-decoration: none;
       font-weight: bold;
+      display: inline-flex; /* Align icon */
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s ease;
     }
+    .post-item a:hover {
+        color: var(--accent-hover);
+        text-decoration: underline;
+    }
+     .post-item a .fa-external-link-alt { /* External link icon */
+        font-size: 0.8em;
+        opacity: 0.7;
+     }
     .post-item p {
-      margin-top: 5px;
-      font-size: 0.9em;
+      margin-top: 6px;
+      font-size: 0.85em;
+      opacity: 0.8;
     }
-    
+    .loading-message, .error-message {
+        text-align: center;
+        padding: 20px;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+     .error-message {
+        color: #ff6b6b; /* Error color */
+     }
+     @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+     }
+     .fa-spinner {
+        animation: spin 1.5s linear infinite;
+        color: var(--spinner-color);
+     }
+
+
     /* Note Styles */
     textarea#note {
-      background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--input-bg); /* Use input background */
+      border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 10px;
+      padding: 15px;
       width: 100%;
-      min-height: 150px;
+      height: 100%; /* Fill available space */
+      flex-grow: 1; /* Ensure it takes space */
       resize: vertical;
-      color: inherit;
+      color: var(--text-color);
       font-family: inherit;
+      font-size: 0.95em;
       outline: none;
-      transition: background 0.3s ease;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
     textarea#note:focus {
-      background: var(--card-hover);
+      background-color: transparent; /* Subtle focus change */
+      border-color: var(--accent-color);
     }
-    
+
     /* Responsive Adjustments */
     @media (max-width: 768px) {
+      .container {
+          padding: 15px;
+          gap: 15px;
+      }
       .header {
         padding: 15px;
+        justify-content: center; /* Center items on smaller screens */
       }
       #time {
         font-size: 2.5em;
       }
+      .content {
+          gap: 15px;
+      }
+       .card {
+          padding: 20px;
+          height: auto; /* Auto height on mobile */
+          min-height: 350px; /* Minimum height */
+      }
       .reddit-input {
-        flex-direction: column;
+        flex-direction: column; /* Stack input and button */
       }
       .reddit-input input,
       .reddit-input button {
         width: 100%;
       }
     }
+
   </style>
 </head>
 <body>
   <canvas id="background"></canvas>
+
   <div class="container">
     <div class="header">
-      <div class="time-weather">
-        <h1 id="time"></h1>
-        <p id="weather"></p>
+      <h1 class="dashboard-title">Dev Dashboard</h1>
+      <div class="time-date-weather">
+        <h2 id="time"></h2>
+        <p id="date"></p>
+        <p id="weather"><i class="fas fa-question-circle"></i> <span>Weather data unavailable</span></p>
       </div>
-      <!-- Theme Toggle -->
-      <button class="theme-toggle" id="themeToggle">Toggle Theme</button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+        <span class="toggle-text">Theme</span>
+      </button>
     </div>
 
     <div class="content">
-    <!-- Hacker News Card -->
-    <div class="card" id="hackernews">
-      <div class="card-header">
-        <div class="header-top">
-        <div>
-          <i class="fab fa-hacker-news-square"></i>
-          <h2>Hacker News Top Stories</h2>
+      <div class="card" id="hackernews">
+        <div class="card-header">
+          <div class="header-top">
+            <div>
+              <i class="fab fa-hacker-news-square" style="color:#FF6600;"></i>
+              <h2>Hacker News Top</h2>
+            </div>
+          </div>
         </div>
-        </div>
+        <div class="posts" id="hn-posts">
+          </div>
       </div>
-      <div class="posts" id="hn-posts">
-        <p>Loading Hacker News...</p>
-      </div>
-    </div>
 
-      <!-- Reddit Card -->
       <div class="card" id="reddit">
         <div class="card-header">
           <div class="header-top">
             <div>
-              <i class="fab fa-reddit-alien"></i>
+              <i class="fab fa-reddit-alien" style="color:#FF4500;"></i>
               <h2 id="reddit-title">r/technology</h2>
             </div>
           </div>
           <div class="reddit-input">
-            <input type="text" id="subreddit-input" placeholder="Enter subreddit (e.g., technology)" />
-            <button id="subreddit-button">Load Subreddit</button>
+            <input type="text" id="subreddit-input" placeholder="Enter subreddit (e.g., programming)" />
+            <button id="subreddit-button">
+                <i class="fas fa-arrow-right"></i>
+                <i class="fas fa-spinner"></i> Load
+            </button>
           </div>
         </div>
         <div class="posts" id="reddit-posts">
-          <p>Loading Reddit posts...</p>
-        </div>
+          </div>
       </div>
 
-      <!-- Note Card -->
       <div class="card">
         <div class="card-header">
           <div class="header-top">
             <div>
-              <i class="fas fa-sticky-note"></i>
-              <h2>Note</h2>
+              <i class="fas fa-sticky-note" style="color:#FFD700;"></i>
+              <h2>Quick Note</h2>
             </div>
           </div>
         </div>
-        <textarea id="note" placeholder="Type your note here..."></textarea>
+        <textarea id="note" placeholder="Type your note here... changes saved automatically."></textarea>
       </div>
-    </div>
-  </div>
 
-  <script>
-    // Canvas Background Animation
+      </div> </div> <script>
+    // --- Configuration ---
+    const HACKERNEWS_STORIES_COUNT = 12; // How many HN stories to show
+    const REDDIT_POST_LIMIT = 15; // How many Reddit posts to show
+    const DEFAULT_SUBREDDIT = 'technology';
+
+    // --- DOM Elements ---
+    const timeElement = document.getElementById('time');
+    const dateElement = document.getElementById('date');
+    const weatherElement = document.getElementById('weather');
+    const themeToggleButton = document.getElementById('themeToggle');
+    const hnPostsContainer = document.getElementById('hn-posts');
+    const redditPostsContainer = document.getElementById('reddit-posts');
+    const redditTitleElement = document.getElementById('reddit-title');
+    const subredditInputElement = document.getElementById('subreddit-input');
+    const subredditLoadButton = document.getElementById('subreddit-button');
+    const noteElement = document.getElementById('note');
+    const bodyElement = document.body;
+
+    // --- Loading/Error Messages ---
+    const loadingHTML = `<p class="loading-message"><i class="fas fa-spinner"></i> Loading...</p>`;
+    function errorHTML(service, message) {
+      return `<p class="error-message"><i class="fas fa-exclamation-triangle"></i> Error loading ${service}: ${message}</p>`;
+    }
+
+    // --- Canvas Background Animation --- (Keep as is, but add init/resize)
     const canvas = document.getElementById('background');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    if (canvas) { // Check if canvas exists
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
 
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 0.5;
-        this.speedX = Math.random() * 2 - 1;
-        this.speedY = Math.random() * 2 - 1;
-        this.color = `hsl(${Math.random() * 360}, 50%, 60%)`;
-      }
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.size > 0.1) this.size -= 0.02;
-        // Reset if offscreen
-        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
-          this.x = Math.random() * canvas.width;
-          this.y = Math.random() * canvas.height;
-          this.size = Math.random() * 2 + 0.5;
+        class Particle {
+             constructor() {
+                this.reset();
+                this.y = Math.random() * canvas.height; // Start anywhere vertically
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = 0; // Start particles from top mostly
+                this.size = Math.random() * 1.5 + 0.5; // Slightly smaller
+                this.speedX = Math.random() * 1 - 0.5; // Slower horizontal
+                this.speedY = Math.random() * 1 + 0.5; // Move downwards
+                // Use accent color hue range for particles
+                const hue = 240 + (Math.random() * 30 - 15); // Around purple/blue
+                this.color = `hsla(${hue}, 70%, 70%, 0.7)`;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                // Reduce size slightly for fading effect - optional
+                // if (this.size > 0.2) this.size -= 0.01;
+
+                // Reset if offscreen (bottom or sides)
+                if (this.y > canvas.height + this.size || this.x < -this.size || this.x > canvas.width + this.size || this.size <= 0.2) {
+                     this.reset();
+                }
+            }
+            draw() {
+                if (this.size > 0.2) {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
         }
-      }
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
 
-    let particles = [];
-    function initParticles() {
-      particles = [];
-      for (let i = 0; i < 80; i++) {
-        particles.push(new Particle());
-      }
-    }
+        function initParticles() {
+            particles = [];
+            const numParticles = Math.min(80, Math.floor(canvas.width * canvas.height / 20000)); // Adjust particle count based on screen size
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
 
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(particle => {
-        particle.update();
-        particle.draw();
-      });
-      requestAnimationFrame(animate);
-    }
-    initParticles();
-    animate();
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      initParticles();
-    });
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            requestAnimationFrame(animate);
+        }
 
-    // Time Update
-    function updateTime() {
+        function setupCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+             setupCanvas();
+             animate();
+             window.addEventListener('resize', setupCanvas);
+        } else {
+            console.log("Reduced motion preferred, canvas animation disabled.");
+            if(canvas) canvas.style.display = 'none'; // Hide canvas element
+        }
+
+    } // end if(canvas)
+
+    // --- Time & Date Update ---
+    function updateTimeDate() {
       const now = new Date();
-      document.getElementById('time').textContent = now.toLocaleTimeString('en-US', { hour12: false });
+      timeElement.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      dateElement.textContent = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
-    setInterval(updateTime, 1000);
-    updateTime();
+    setInterval(updateTimeDate, 1000);
+    updateTimeDate(); // Initial call
 
-    // Hacker News Fetch
+    // --- Weather Fetch Placeholder ---
+    async function fetchWeather(lat = 32.23, lon = -7.93) { // Example: Ben Guerir coords
+        weatherElement.innerHTML = `<i class="fas fa-spinner"></i> Loading weather...`;
+        // --- IMPORTANT ---
+        // You need an API key from a weather service like OpenWeatherMap, WeatherAPI, etc.
+
+        const apiKey = 'bd6d715c01e7cdbd5cd95b39f2b6c64d';
+        const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`; // Example URL
+
+        if (apiKey === 'YOUR_API_KEY') {
+             console.warn("Weather API key not set. Please get one and update the script.");
+             weatherElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> Weather setup needed`;
+             return;
+        }
+
+        try {
+            const response = await fetch(weatherApiUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            const iconCode = data.weather[0].icon;
+            const description = data.weather[0].description;
+            const temp = Math.round(data.main.temp);
+            const location = data.name;
+
+            // Map OpenWeatherMap icons to Font Awesome icons (example mapping)
+             const weatherIcons = {
+                 '01d': 'fa-sun', '01n': 'fa-moon', // clear
+                 '02d': 'fa-cloud-sun', '02n': 'fa-cloud-moon', // few clouds
+                 '03d': 'fa-cloud', '03n': 'fa-cloud', // scattered clouds
+                 '04d': 'fa-cloud', '04n': 'fa-cloud', // broken clouds (use same as scattered)
+                 '09d': 'fa-cloud-showers-heavy', '09n': 'fa-cloud-showers-heavy', // shower rain
+                 '10d': 'fa-cloud-sun-rain', '10n': 'fa-cloud-moon-rain', // rain
+                 '11d': 'fa-bolt', '11n': 'fa-bolt', // thunderstorm
+                 '13d': 'fa-snowflake', '13n': 'fa-snowflake', // snow
+                 '50d': 'fa-smog', '50n': 'fa-smog' // mist
+             };
+
+            weatherElement.innerHTML = `
+                <i class="fas ${weatherIcons[iconCode] || 'fa-question-circle'}"></i>
+                <span>${temp}°C, ${description} in ${location}</span>
+            `;
+        } catch (error) {
+            console.error('Error fetching weather:', error);
+            weatherElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Weather unavailable`;
+        }
+    }
+
+    // --- Hacker News Fetch ---
     async function fetchHackerNews() {
-      const postsContainer = document.getElementById('hn-posts');
-      postsContainer.innerHTML = '<p>Loading Hacker News...</p>';
+      hnPostsContainer.innerHTML = loadingHTML;
       try {
-        // Fetch top story IDs
         const idsResponse = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+        if (!idsResponse.ok) throw new Error(`HN API Error: ${idsResponse.status}`);
         const ids = await idsResponse.json();
-        const topIds = ids.slice(0, 10);
-        // Fetch details for each story
-        const storyPromises = topIds.map(async id => {
-          const storyResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
-          return storyResponse.json();
-        });
+        const topIds = ids.slice(0, HACKERNEWS_STORIES_COUNT);
+
+        const storyPromises = topIds.map(id =>
+          fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => {
+            if (!res.ok) throw new Error(`HN Item API Error: ${res.status}`);
+            return res.json();
+          })
+        );
         const stories = await Promise.all(storyPromises);
-        // Build HTML
-        postsContainer.innerHTML = stories.map(story => `
+
+        hnPostsContainer.innerHTML = stories
+        .filter(story => story) // Filter out any null responses
+        .map(story => `
           <div class="post-item">
-            <a href="${story.url || '#'}" target="_blank">
+            <a href="${story.url || `https://news.ycombinator.com/item?id=${story.id}`}" target="_blank" rel="noopener noreferrer">
               ${story.title}
+              ${story.url ? '<i class="fas fa-external-link-alt"></i>' : ''}
             </a>
-            <p>Score: ${story.score} | By: ${story.by}</p>
+            <p>Score: ${story.score || 0} | By: ${story.by || 'Unknown'} | Comments: ${story.descendants || 0}</p>
           </div>
         `).join('');
       } catch (error) {
         console.error('Error fetching Hacker News:', error);
-        postsContainer.innerHTML = '<p>Failed to load Hacker News stories.</p>';
+        hnPostsContainer.innerHTML = errorHTML('Hacker News', error.message);
       }
     }
-    fetchHackerNews();
 
-    // Reddit Fetch
-    async function fetchReddit(subreddit = 'technology') {
-      const redditPosts = document.getElementById('reddit-posts');
-      redditPosts.innerHTML = '<p>Loading Reddit posts...</p>';
+    // --- Reddit Fetch ---
+    async function fetchReddit(subreddit = DEFAULT_SUBREDDIT) {
+      redditPostsContainer.innerHTML = loadingHTML;
+      redditTitleElement.textContent = `r/${subreddit}`;
+      subredditLoadButton.disabled = true;
+      subredditInputElement.disabled = true;
+      subredditLoadButton.classList.add('loading'); // Show spinner
+
       try {
-        const response = await fetch(`https://www.reddit.com/r/${subreddit}.json`);
+        // Using the unofficial .json endpoint. Be mindful of potential rate limits or changes by Reddit.
+        // A backend proxy would be more robust for frequent use.
+        const response = await fetch(`https://www.reddit.com/r/${encodeURIComponent(subreddit)}/hot.json?limit=${REDDIT_POST_LIMIT}`);
+         if (!response.ok) {
+             if(response.status === 404) throw new Error(`Subreddit 'r/${subreddit}' not found.`);
+             if(response.status === 403) throw new Error(`Access denied to 'r/${subreddit}' (private?).`);
+             throw new Error(`Reddit API Error: ${response.status}`);
+         }
         const data = await response.json();
+
+        if (!data?.data?.children || data.data.children.length === 0) {
+            throw new Error(`No posts found in r/${subreddit} or invalid data.`);
+        }
+
         const posts = data.data.children.map(post => post.data);
-        redditPosts.innerHTML = posts.map(post => `
+        redditPostsContainer.innerHTML = posts.map(post => `
           <div class="post-item">
-            <a href="https://reddit.com${post.permalink}" target="_blank">
-              <i class="fab fa-reddit-alien"></i> ${post.title}
+            <a href="https://reddit.com${post.permalink}" target="_blank" rel="noopener noreferrer">
+               ${post.link_flair_text ? `[${post.link_flair_text}] ` : ''}${post.title}
+               <i class="fas fa-external-link-alt"></i>
             </a>
-            <p>Score: ${post.score} | Comments: ${post.num_comments}</p>
+             <p>Score: ${post.score} | Comments: ${post.num_comments} | Upvote Ratio: ${post.upvote_ratio * 100}%</p>
           </div>
         `).join('');
-        document.getElementById('reddit-title').textContent = `r/${subreddit}`;
       } catch (error) {
         console.error('Error fetching Reddit:', error);
-        redditPosts.innerHTML = '<p>Failed to load subreddit. Please try again.</p>';
+        redditPostsContainer.innerHTML = errorHTML(`r/${subreddit}`, error.message);
+      } finally {
+         subredditLoadButton.disabled = false;
+         subredditInputElement.disabled = false;
+         subredditLoadButton.classList.remove('loading'); // Hide spinner
       }
     }
-    document.getElementById('subreddit-button').addEventListener('click', () => {
-      const subreddit = document.getElementById('subreddit-input').value.trim();
-      if (subreddit) {
-        fetchReddit(subreddit);
+
+    // --- Reddit Input Handling ---
+    function handleSubredditLoad() {
+        const subreddit = subredditInputElement.value.trim().replace(/^r\//i, ''); // Allow "r/" prefix but remove it
+        if (subreddit) {
+            fetchReddit(subreddit);
+        } else {
+             // Optionally provide feedback if input is empty
+             subredditInputElement.focus();
+             // Maybe show a small temporary message?
+        }
+    }
+    subredditLoadButton.addEventListener('click', handleSubredditLoad);
+    subredditInputElement.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            handleSubredditLoad();
+        }
+    });
+
+    // --- Note Persistence ---
+    const savedNote = localStorage.getItem('devDashboardNote');
+    if (savedNote) {
+      noteElement.value = savedNote;
+    }
+    noteElement.addEventListener('input', () => {
+      localStorage.setItem('devDashboardNote', noteElement.value);
+    });
+
+    // --- Theme Toggle & Persistence ---
+    const currentTheme = localStorage.getItem('devDashboardTheme');
+    if (currentTheme === 'light') {
+        bodyElement.classList.add('light-mode');
+    } // Default is dark, no need for else
+
+    themeToggleButton.addEventListener('click', () => {
+      bodyElement.classList.toggle('light-mode');
+      // Save preference
+      if (bodyElement.classList.contains('light-mode')) {
+        localStorage.setItem('devDashboardTheme', 'light');
+      } else {
+        localStorage.setItem('devDashboardTheme', 'dark');
+         // Or remove item: localStorage.removeItem('devDashboardTheme');
       }
     });
-    fetchReddit();
 
-    // Note Persistence using localStorage
-    const note = document.getElementById('note');
-    note.value = localStorage.getItem('techDashboardNote') || '';
-    note.addEventListener('input', () => {
-      localStorage.setItem('techDashboardNote', note.value);
-    });
+    // --- Initial Data Fetch ---
+    fetchHackerNews();
+    fetchReddit(); // Fetch default subreddit
+    // Attempt to get location and fetch weather (will handle API key check internally)
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                fetchWeather(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                console.warn("Geolocation failed:", error.message, "Falling back to default coordinates.");
+                fetchWeather(); // Fetch with default coords if geolocation fails/denied
+            }
+        );
+    } else {
+         console.warn("Geolocation not supported by this browser. Falling back to default coordinates.");
+         fetchWeather(); // Fetch with default coords if geolocation is not available
+    }
 
-    // Theme Toggle
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('light-mode');
-    });
   </script>
 </body>
 </html>

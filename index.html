@@ -6,26 +6,67 @@
   <title>Gateway Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="src/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- The main content is in src/index.html. -->
-  <div id="app-root"></div>
-  <script>
-    fetch('src/index.html')
-      .then(response => response.text())
-      .then(html => {
-        // Remove the <script src="app.js"> from the loaded HTML to avoid double loading
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
-        const scripts = tempDiv.querySelectorAll('script[src="app.js"]');
-        scripts.forEach(s => s.remove());
-        document.getElementById('app-root').innerHTML = tempDiv.querySelector('body').innerHTML;
-        // Dynamically load the JS
-        const script = document.createElement('script');
-        script.src = 'src/app.js';
-        document.body.appendChild(script);
-      });
-  </script>
+  <canvas id="background"></canvas>
+  <div class="container">
+    <div class="header">
+      <img src="assets/logoGD.png" alt="Gateway Dashboard Logo" class="dashboard-logo" />
+      <div class="time-date-weather">
+        <h2 id="time"></h2>
+        <p id="date"></p>
+        <p id="weather"><i class="fas fa-question-circle"></i> <span>Weather data unavailable</span></p>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+        <i class="fas fa-sun"></i>
+        <span class="toggle-text">Theme</span>
+      </button>
+    </div>
+    <div class="content">
+      <div class="card" id="hackernews">
+        <div class="card-header">
+          <div class="header-top">
+            <div>
+              <i class="fab fa-hacker-news-square" style="color:#FF6600;"></i>
+              <h2>Hacker News Top</h2>
+            </div>
+          </div>
+        </div>
+        <div class="posts" id="hn-posts"></div>
+      </div>
+      <div class="card" id="reddit">
+        <div class="card-header">
+          <div class="header-top">
+            <div>
+              <i class="fab fa-reddit-alien" style="color:#FF4500;"></i>
+              <h2 id="reddit-title">r/technology</h2>
+            </div>
+          </div>
+          <div class="reddit-input">
+            <input type="text" id="subreddit-input" placeholder="Enter subreddit (e.g., programming)" />
+            <button id="subreddit-button">
+                <i class="fas fa-arrow-right"></i>
+                <i class="fas fa-spinner"></i> Load
+            </button>
+          </div>
+        </div>
+        <div class="posts" id="reddit-posts"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="header-top">
+            <div>
+              <i class="fas fa-sticky-note" style="color:#FFD700;"></i>
+              <h2>Quick Note</h2>
+            </div>
+          </div>
+        </div>
+        <textarea id="note" placeholder="Type your note here... changes saved automatically."></textarea>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
 </body>
 </html>

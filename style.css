@@ -1,0 +1,48 @@
+/* --- BEGIN: Copied from src/style.css for full site styling --- */
+
+/* Global Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(120deg, #1a1d24 0%, #2c3e50 100%);
+  background-size: 200% 200%;
+  animation: gradientMove 8s ease-in-out infinite;
+  color: var(--text-color);
+  overflow-x: hidden;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Background Canvas */
+#background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+}
+
+/* Main Container */
+.container {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+  gap: 25px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ...rest of src/style.css... */
+
+/* --- END: Copied from src/style.css --- */

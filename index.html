@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gateway Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <!-- The main content is in src/index.html. -->
+  <div id="app-root"></div>
+  <script>
+    fetch('src/index.html')
+      .then(response => response.text())
+      .then(html => {
+        // Remove the <script src="app.js"> from the loaded HTML to avoid double loading
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const scripts = tempDiv.querySelectorAll('script[src="app.js"]');
+        scripts.forEach(s => s.remove());
+        document.getElementById('app-root').innerHTML = tempDiv.querySelector('body').innerHTML;
+        // Dynamically load the JS
+        const script = document.createElement('script');
+        script.src = 'src/app.js';
+        document.body.appendChild(script);
+      });
+  </script>
+</body>
+</html>

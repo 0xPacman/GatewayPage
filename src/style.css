@@ -462,3 +462,24 @@ textarea#note:focus {
     width: 100%;
   }
 }
+
+.dashboard-logo {
+  height: 60px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px var(--shadow-color);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: #fff;
+  padding: 6px 12px;
+}
+.dashboard-logo:hover {
+  transform: scale(1.07) rotate(-2deg);
+  box-shadow: 0 6px 24px var(--accent-color), 0 0 2px #fff;
+}
+@media (min-width: 768px) {
+  .dashboard-logo {
+    margin: 0;
+  }
+}

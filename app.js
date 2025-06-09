@@ -19,8 +19,6 @@ const subredditInputElement = document.getElementById('subredditInput');
 const subredditLoadButton = document.getElementById('subredditLoad');
 const noteElement = document.getElementById('notes');
 const toastContainer = document.getElementById('toastContainer');
-const cityInputElement = document.getElementById('cityInput');
-const citySearchButton = document.getElementById('citySearchBtn');
 
 // Refresh buttons
 const hnRefreshBtn = document.getElementById('hnRefresh');
@@ -32,7 +30,6 @@ const notesRefreshBtn = document.getElementById('notesRefresh');
 let currentLocation = { lat: 32.23, lon: -7.93 }; // Default: Ben Guerir coords
 let currentSubreddit = DEFAULT_SUBREDDIT;
 let refreshIntervals = {};
-let currentCity = 'Ben Guerir'; // Default city name
 
 // Utility Functions
 function showToast(message, type = 'info', duration = TOAST_DURATION) {
@@ -268,54 +265,6 @@ async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon
     }
 }
 
-
-// City Search Function
-async function fetchWeatherByCity(cityName, showToastOnError = true) {
-    if (!cityName.trim()) {
-        showToast("Please enter a city name", "warning", 3000);
-        return;
-    }
-    
-    citySearchButton.disabled = true;
-    cityInputElement.disabled = true;
-    citySearchButton.classList.add("loading");
-    
-    if (WEATHER_API_KEY === "YOUR_API_KEY") {
-        const message = "Weather API key not configured";
-        if (showToastOnError) showToast(message, "warning");
-        citySearchButton.disabled = false;
-        cityInputElement.disabled = false;
-        citySearchButton.classList.remove("loading");
-        return;
-    }
-    
-    const geocodingUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(cityName)}&limit=1&appid=${WEATHER_API_KEY}`;
-    
-    try {
-        const response = await fetch(geocodingUrl);
-        if (!response.ok) {
-            throw new Error(`Geocoding API error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        
-        if (!data || data.length === 0) {
-            throw new Error(`City "${cityName}" not found. Please check the spelling and try again.`);
-        }
-        
-        const location = data[0];
-        await fetchWeather(location.lat, location.lon, showToastOnError);
-        
-        showToast(`Weather updated for ${location.name}${location.country ? `, ${location.country}` : ""}`, "success", 3000);
-        
-    } catch (error) {
-        console.error("Error fetching weather by city:", error);
-        if (showToastOnError) showToast(`City search error: ${error.message}`, "error");
-    } finally {
-        citySearchButton.disabled = false;
-        cityInputElement.disabled = false;
-        citySearchButton.classList.remove("loading");
-    }
-}
 // Hacker News Functions
 async function fetchHackerNews(showToastOnError = true) {
     hnPostsContainer.innerHTML = createLoadingHTML('Loading Hacker News...');
@@ -467,7 +416,6 @@ function handleKeyboardShortcuts(event) {
                 event.preventDefault();
                 subredditInputElement.focus();
                 break;
-            case "w":\n                event.preventDefault();\n                cityInputElement.focus();\n                break;
         }
     }
 }
@@ -541,28 +489,6 @@ function init() {
             handleSubredditLoad();
         }
     });
-
-    // City search listeners
-    citySearchButton.addEventListener("click", () => {
-        const cityName = cityInputElement.value.trim();
-        if (cityName) {
-            fetchWeatherByCity(cityName);
-        } else {
-            cityInputElement.focus();
-            showToast("Please enter a city name", "warning", 3000);
-        }
-    });
-    
-    cityInputElement.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-            const cityName = cityInputElement.value.trim();
-            if (cityName) {
-                fetchWeatherByCity(cityName);
-            } else {
-                showToast("Please enter a city name", "warning", 3000);
-            }
-        }
-    });
     
     // Notes auto-save with debouncing
     const debouncedSaveNotes = debounce(() => {
@@ -584,7 +510,7 @@ function init() {
     
     // Show welcome message
     setTimeout(() => {
-        showToast('Welcome to Gateway Dashboard! Press Ctrl+R to refresh all, Ctrl+T to toggle theme, Ctrl+/ to focus Reddit search, Ctrl+W to focus city search.', 'info', 8000);
+        showToast('Welcome to Gateway Dashboard! Press Ctrl+R to refresh all, Ctrl+T to toggle theme, Ctrl+/ to focus search.', 'info', 8000);
     }, 1000);
 }
 
@@ -595,3 +521,4 @@ window.addEventListener('beforeunload', () => {
 
 // Start the application
 document.addEventListener('DOMContentLoaded', init);
+

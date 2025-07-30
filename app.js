@@ -314,7 +314,7 @@ async function fetchReddit(subreddit = currentSubreddit, showToastOnError = true
     subredditLoadButton.classList.add('loading');
     
     try {
-        const response = await fetch(`https://old.reddit.com/r/${encodeURIComponent(subreddit)}/hot.json?limit=${REDDIT_POST_LIMIT}`);
+        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.reddit.com/r/${subreddit}/hot.json?limit=${REDDIT_POST_LIMIT}`)}`);
         
         if (!response.ok) {
             if (response.status === 404) throw new Error(`Subreddit 'r/${subreddit}' not found.`);

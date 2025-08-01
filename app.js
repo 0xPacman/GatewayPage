@@ -1,37 +1,28 @@
 // Configuration Constants
-const HACKERNEWS_STORIES_COUNT = 15;
-const REDDIT_POST_LIMIT = 20;
-const DEFAULT_SUBREDDIT = 'programming';
+const HACKERNEWS_STORIES_COUNT = 5;
 const WEATHER_API_KEY = 'bd6d715c01e7cdbd5cd95b39f2b6c64d'; // Consider moving to environment variable
 const TOAST_DURATION = 5000;
+const WALLPAPER_CHANGE_INTERVAL = 15 * 60 * 1000; // 15 minutes
+const NOTIFICATION_CYCLE_INTERVAL = 1 * 60 * 1000; // 1 minute
 
 // DOM Elements
-const bodyElement = document.body;
 const timeElement = document.getElementById('time');
 const dateElement = document.getElementById('date');
 const weatherElement = document.getElementById('weather');
-const weatherDetailsElement = document.getElementById('weatherDetails');
-const themeToggleButton = document.getElementById('themeToggle');
-const hnPostsContainer = document.getElementById('hnPosts');
-const redditPostsContainer = document.getElementById('redditPosts');
-const redditTitleElement = document.getElementById('redditTitle');
-const subredditInputElement = document.getElementById('subredditInput');
-const subredditLoadButton = document.getElementById('subredditLoad');
-const noteElement = document.getElementById('notes');
+const notificationsContainer = document.getElementById('notifications-container');
 const toastContainer = document.getElementById('toastContainer');
-
-// Refresh buttons
-const hnRefreshBtn = document.getElementById('hnRefresh');
-const redditRefreshBtn = document.getElementById('redditRefresh');
-const weatherRefreshBtn = document.getElementById('weatherRefresh');
-const notesRefreshBtn = document.getElementById('notesRefresh');
+const backgroundImage = document.getElementById('background-image');
 
 // State Management
 let currentLocation = { lat: 32.23, lon: -7.93 }; // Default: Ben Guerir coords
-let currentSubreddit = DEFAULT_SUBREDDIT;
-let refreshIntervals = {};
+let wallpaperInterval;
+let notificationInterval;
+let hackerNewsStories = [];
+let currentStoryIndex = 0;
+let allNotifications = []; // Store all notification cards
+let visibleStartIndex = 0; // Track which cards are currently visible
 
-// Utility Functions
+// --- Utility Functions ---
 function showToast(message, type = 'info', duration = TOAST_DURATION) {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -53,7 +44,6 @@ function showToast(message, type = 'info', duration = TOAST_DURATION) {
     
     toastContainer.appendChild(toast);
     
-    // Auto remove after duration
     setTimeout(() => {
         if (toast.parentElement) {
             toast.style.animation = 'slideOut 0.3s ease forwards';
@@ -62,136 +52,45 @@ function showToast(message, type = 'info', duration = TOAST_DURATION) {
     }, duration);
 }
 
-function createLoadingHTML(message = 'Loading...') {
+function createErrorHTML(title, message) {
     return `
-        <div class="loading">
-            <i class="fas fa-spinner"></i>
-            <span>${message}</span>
+        <div class="notification-card visible">
+            <div class="header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Error</span>
+            </div>
+            <p><strong>Failed to load ${title}:</strong> ${message}</p>
         </div>
     `;
 }
 
-function createErrorHTML(title, message, retryCallback = null) {
-    const retryButton = retryCallback ? 
-        `<button class="retry-btn" onclick="${retryCallback}">
-            <i class="fas fa-redo"></i> Retry
-        </button>` : '';
-    
-    return `
-        <div class="error">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h3>Failed to load ${title}</h3>
-            <p>${message}</p>
-            ${retryButton}
-        </div>
-    `;
-}
+// --- Core Functions ---
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Background Animation
-function initBackgroundAnimation() {
-    const canvas = document.getElementById('background');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    
-    class Particle {
-        constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 0.5;
-            this.vy = (Math.random() - 0.5) * 0.5;
-            this.size = Math.random() * 2 + 1;
-            this.opacity = Math.random() * 0.5 + 0.2;
-        }
-        
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            
-            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-        }
-        
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(138, 133, 255, ${this.opacity})`;
-            ctx.fill();
-        }
-    }
-    
-    function initParticles() {
-        particles = [];
-        const particleCount = Math.min(50, Math.floor((canvas.width * canvas.height) / 15000));
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle());
-        }
-    }
-    
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(particle => {
-            particle.update();
-            particle.draw();
-        });
-        requestAnimationFrame(animate);
-    }
-    
-    function setupCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        initParticles();
-    }
-    
-    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
-        setupCanvas();
-        animate();
-        window.addEventListener('resize', debounce(setupCanvas, 250));
-    } else {
-        canvas.style.display = 'none';
-    }
-}
-
-// Time & Date Functions
+// Time and Date
 function updateTimeDate() {
     const now = new Date();
     timeElement.textContent = now.toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         minute: '2-digit', 
-        second: '2-digit', 
         hour12: false 
     });
     dateElement.textContent = now.toLocaleDateString('en-US', { 
         weekday: 'long', 
-        year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
     });
 }
 
-// Weather Functions
-async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon, showToastOnError = true) {
-    weatherElement.innerHTML = `<i class="fas fa-spinner"></i> Loading weather...`;
-    weatherDetailsElement.innerHTML = createLoadingHTML('Loading weather details...');
-    
+// Wallpaper
+async function updateWallpaper() {
+    // The wallpaper is now a CSS gradient, so this function is not needed.
+    // We can re-enable it if we want to go back to image backgrounds.
+}
+
+// Weather
+async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon) {
     if (WEATHER_API_KEY === 'YOUR_API_KEY') {
-        const message = 'Weather API key not configured';
-        weatherElement.innerHTML = `<i class="fas fa-cog"></i> ${message}`;
-        weatherDetailsElement.innerHTML = createErrorHTML('Weather', message);
-        if (showToastOnError) showToast(message, 'warning');
+        weatherElement.innerHTML = `<i class="fas fa-cog"></i> API Key Needed`;
         return;
     }
     
@@ -199,9 +98,7 @@ async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon
     
     try {
         const response = await fetch(weatherApiUrl);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         const data = await response.json();
         
         const iconCode = data.weather[0].icon;
@@ -223,300 +120,204 @@ async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon
         
         weatherElement.innerHTML = `
             <i class="fas ${weatherIcons[iconCode] || 'fa-question-circle'}"></i>
-            <span>${temp}°C, ${description} in ${location}</span>
+            <span>${temp}°C in ${location}</span>
         `;
         
-        weatherDetailsElement.innerHTML = `
-            <div class="weather-item">
-                <span class="label">Temperature</span>
-                <span class="value">${temp}°C</span>
-            </div>
-            <div class="weather-item">
-                <span class="label">Feels like</span>
-                <span class="value">${Math.round(data.main.feels_like)}°C</span>
-            </div>
-            <div class="weather-item">
-                <span class="label">Humidity</span>
-                <span class="value">${data.main.humidity}%</span>
-            </div>
-            <div class="weather-item">
-                <span class="label">Pressure</span>
-                <span class="value">${data.main.pressure} hPa</span>
-            </div>
-            <div class="weather-item">
-                <span class="label">Wind Speed</span>
-                <span class="value">${data.wind?.speed || 0} m/s</span>
-            </div>
-            <div class="weather-item">
-                <span class="label">Visibility</span>
-                <span class="value">${data.visibility ? (data.visibility / 1000).toFixed(1) + ' km' : 'N/A'}</span>
-            </div>
-        `;
-        
-        // Update current location
         currentLocation = { lat, lon };
         
     } catch (error) {
         console.error('Error fetching weather:', error);
-        const message = 'Weather data unavailable';
-        weatherElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-        weatherDetailsElement.innerHTML = createErrorHTML('Weather', error.message, 'refreshWeather()');
-        if (showToastOnError) showToast(`Weather error: ${error.message}`, 'error');
+        weatherElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Weather unavailable`;
+        showToast(`Weather error: ${error.message}`, 'error');
     }
 }
 
-// Hacker News Functions
-async function fetchHackerNews(showToastOnError = true) {
-    hnPostsContainer.innerHTML = createLoadingHTML('Loading Hacker News...');
-    
+// Hacker News
+async function fetchHackerNews() {
     try {
         const idsResponse = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
         if (!idsResponse.ok) throw new Error(`HN API Error: ${idsResponse.status}`);
         const ids = await idsResponse.json();
-        const topIds = ids.slice(0, HACKERNEWS_STORIES_COUNT);
+        const topIds = ids.slice(0, HACKERNEWS_STORIES_COUNT * 2); // Fetch more to ensure we get enough valid stories
         
         const storyPromises = topIds.map(id =>
-            fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => {
-                if (!res.ok) throw new Error(`HN Item API Error: ${res.status}`);
-                return res.json();
-            })
+            fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => res.json())
         );
-        const stories = await Promise.all(storyPromises);
         
-        hnPostsContainer.innerHTML = stories
-            .filter(story => story)
-            .map(story => `
-                <div class="post-item fade-in">
-                    <a href="${story.url || `https://news.ycombinator.com/item?id=${story.id}`}" 
-                       target="_blank" rel="noopener noreferrer">
-                        ${story.title}
-                        ${story.url ? '<i class="fas fa-external-link-alt"></i>' : ''}
-                    </a>
-                    <p>Score: ${story.score || 0} | By: ${story.by || 'Unknown'} | Comments: ${story.descendants || 0}</p>
-                </div>
-            `).join('');
-            
-        showToast('Hacker News updated', 'success', 2000);
+        const stories = await Promise.all(storyPromises);
+        hackerNewsStories = stories.filter(story => story && story.title && story.url);
+        
+        if (hackerNewsStories.length > 0) {
+            currentStoryIndex = 0;
+            cycleNotification(); // Show the first one immediately
+            if (notificationInterval) clearInterval(notificationInterval);
+            notificationInterval = setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
+        } else {
+            notificationsContainer.innerHTML = createErrorHTML('Hacker News', 'No stories found.');
+        }
         
     } catch (error) {
         console.error('Error fetching Hacker News:', error);
-        hnPostsContainer.innerHTML = createErrorHTML('Hacker News', error.message, 'refreshHackerNews()');
-        if (showToastOnError) showToast(`Hacker News error: ${error.message}`, 'error');
+        notificationsContainer.innerHTML = createErrorHTML('Hacker News', error.message);
     }
 }
 
-// Reddit Functions
-async function fetchReddit(subreddit = currentSubreddit, showToastOnError = true) {
-    redditPostsContainer.innerHTML = createLoadingHTML('Loading Reddit...');
-    redditTitleElement.textContent = `r/${subreddit}`;
-    subredditLoadButton.disabled = true;
-    subredditInputElement.disabled = true;
-    subredditLoadButton.classList.add('loading');
+function cycleNotification() {
+    if (hackerNewsStories.length === 0) return;
+
+    const story = hackerNewsStories[currentStoryIndex];
     
-    try {
-        const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.reddit.com/r/${subreddit}/hot.json?limit=${REDDIT_POST_LIMIT}`)}`);
+    const notificationCard = document.createElement('div');
+    notificationCard.className = 'notification-card';
+    notificationCard.innerHTML = `
+        <div class="header">
+            <i class="fab fa-hacker-news"></i>
+            <span>Hacker News</span>
+        </div>
+        <a href="${story.url}" target="_blank" rel="noopener noreferrer">${story.title}</a>
+        <p>Score: ${story.score || 0} | Comments: ${story.descendants || 0}</p>
+    `;
+    
+    // Add to beginning of allNotifications array
+    allNotifications.unshift(notificationCard);
+    
+    // Keep maximum of 4 cards - remove old ones (reduced for compact view)
+    if (allNotifications.length > 4) {
+        allNotifications.splice(4);
+    }
+    
+    // Reset visibleStartIndex to show the newest card
+    visibleStartIndex = 0;
+    
+    // Update the display
+    updateNotificationDisplay();
+
+    currentStoryIndex = (currentStoryIndex + 1) % hackerNewsStories.length;
+}
+
+function updateNotificationDisplay() {
+    // Clear container
+    notificationsContainer.innerHTML = '';
+    
+    // Show up to 4 cards starting from visibleStartIndex (reduced for compact view)
+    const maxVisible = 4;
+    for (let i = 0; i < Math.min(maxVisible, allNotifications.length); i++) {
+        const cardIndex = (visibleStartIndex + i) % allNotifications.length;
+        const card = allNotifications[cardIndex].cloneNode(true);
         
-        if (!response.ok) {
-            if (response.status === 404) throw new Error(`Subreddit 'r/${subreddit}' not found.`);
-            if (response.status === 403) throw new Error(`Access denied to 'r/${subreddit}' (private?).`);
-            throw new Error(`Reddit API Error: ${response.status}`);
+        // Apply stacking styles
+        card.style.position = 'absolute';
+        card.style.top = `${i * 4}px`; // Very small offset for compact stacking
+        card.style.left = '0';
+        card.style.right = '0';
+        card.style.zIndex = maxVisible - i;
+        card.style.width = '100%';
+        
+        // Apply visual effects based on position
+        if (i === 0) {
+            card.classList.add('visible');
+            card.style.transform = 'translateY(0px) scale(1)';
+            card.style.opacity = '1';
+            card.style.filter = 'blur(0px)';
+        } else if (i === 1) {
+            card.classList.add('old');
+            card.style.transform = 'translateY(4px) scale(0.98)';
+            card.style.opacity = '0.7';
+            card.style.filter = 'blur(1px)';
+        } else if (i === 2) {
+            card.classList.add('older');
+            card.style.transform = 'translateY(8px) scale(0.96)';
+            card.style.opacity = '0.5';
+            card.style.filter = 'blur(2px)';
+        } else {
+            card.style.transform = 'translateY(12px) scale(0.94)';
+            card.style.opacity = '0.3';
+            card.style.filter = 'blur(3px)';
         }
         
-        const data = await response.json();
-        
-        if (!data?.data?.children || data.data.children.length === 0) {
-            throw new Error(`No posts found in r/${subreddit} or invalid data.`);
-        }
-        
-        const posts = data.data.children.map(post => post.data);
-        redditPostsContainer.innerHTML = posts.map(post => `
-            <div class="post-item fade-in">
-                <a href="https://reddit.com${post.permalink}" target="_blank" rel="noopener noreferrer">
-                    ${post.link_flair_text ? `[${post.link_flair_text}] ` : ''}${post.title}
-                    <i class="fas fa-external-link-alt"></i>
-                </a>
-                <p>Score: ${post.score} | Comments: ${post.num_comments} | Upvote Ratio: ${Math.round(post.upvote_ratio * 100)}%</p>
-            </div>
-        `).join('');
-        
-        currentSubreddit = subreddit;
-        showToast(`r/${subreddit} updated`, 'success', 2000);
-        
-    } catch (error) {
-        console.error('Error fetching Reddit:', error);
-        redditPostsContainer.innerHTML = createErrorHTML(`r/${subreddit}`, error.message, 'refreshReddit()');
-        if (showToastOnError) showToast(`Reddit error: ${error.message}`, 'error');
-    } finally {
-        subredditLoadButton.disabled = false;
-        subredditInputElement.disabled = false;
-        subredditLoadButton.classList.remove('loading');
+        notificationsContainer.appendChild(card);
     }
 }
 
-// Refresh Functions
-function refreshHackerNews() {
-    hnRefreshBtn.classList.add('loading');
-    fetchHackerNews().finally(() => {
-        hnRefreshBtn.classList.remove('loading');
-    });
-}
-
-function refreshReddit() {
-    redditRefreshBtn.classList.add('loading');
-    fetchReddit(currentSubreddit).finally(() => {
-        redditRefreshBtn.classList.remove('loading');
-    });
-}
-
-function refreshWeather() {
-    weatherRefreshBtn.classList.add('loading');
-    fetchWeather(currentLocation.lat, currentLocation.lon).finally(() => {
-        weatherRefreshBtn.classList.remove('loading');
-    });
-}
-
-function clearNotes() {
-    if (confirm('Are you sure you want to clear all notes?')) {
-        noteElement.value = '';
-        localStorage.removeItem('devDashboardNote');
-        showToast('Notes cleared', 'success', 2000);
-    }
-}
-
-// Event Handlers
-function handleSubredditLoad() {
-    const subreddit = subredditInputElement.value.trim().replace(/^r\//i, '');
-    if (subreddit) {
-        fetchReddit(subreddit);
+function scrollNotifications(direction) {
+    if (allNotifications.length <= 1) return;
+    
+    if (direction > 0) {
+        // Scroll down (show newer cards)
+        visibleStartIndex = (visibleStartIndex - 1 + allNotifications.length) % allNotifications.length;
     } else {
-        subredditInputElement.focus();
-        showToast('Please enter a subreddit name', 'warning', 3000);
+        // Scroll up (show older cards)
+        visibleStartIndex = (visibleStartIndex + 1) % allNotifications.length;
     }
+    
+    updateNotificationDisplay();
 }
 
-// Keyboard Shortcuts
-function handleKeyboardShortcuts(event) {
-    // Only trigger if not typing in an input
-    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
-    
-    if (event.ctrlKey || event.metaKey) {
-        switch (event.key) {
-            case 'r':
-                event.preventDefault();
-                refreshHackerNews();
-                refreshReddit();
-                refreshWeather();
-                showToast('All sections refreshed', 'info', 2000);
-                break;
-            case 't':
-                event.preventDefault();
-                themeToggleButton.click();
-                break;
-            case '/':
-                event.preventDefault();
-                subredditInputElement.focus();
-                break;
-        }
-    }
-}
 
 // Geolocation
 function getCurrentLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                fetchWeather(position.coords.latitude, position.coords.longitude, false);
+                fetchWeather(position.coords.latitude, position.coords.longitude);
             },
             (error) => {
                 console.warn("Geolocation failed:", error.message);
-                fetchWeather(currentLocation.lat, currentLocation.lon, false);
+                fetchWeather(); // Use default location
             }
         );
     } else {
         console.warn("Geolocation not supported");
-        fetchWeather(currentLocation.lat, currentLocation.lon, false);
+        fetchWeather(); // Use default location
     }
-}
-
-// Auto-refresh functionality
-function setupAutoRefresh() {
-    // Refresh Hacker News every 10 minutes
-    refreshIntervals.hackerNews = setInterval(refreshHackerNews, 10 * 60 * 1000);
-    
-    // Refresh weather every 30 minutes
-    refreshIntervals.weather = setInterval(refreshWeather, 30 * 60 * 1000);
 }
 
 // Initialization
 function init() {
-    // Initialize background animation
-    initBackgroundAnimation();
-    
-    // Start time updates
-    setInterval(updateTimeDate, 1000);
+    // Initial calls
     updateTimeDate();
+    getCurrentLocation();
+    fetchHackerNews();
+    // updateWallpaper(); // No longer needed with gradient background
+
+    // Set intervals
+    setInterval(updateTimeDate, 1000);
+    // wallpaperInterval = setInterval(updateWallpaper, WALLPAPER_CHANGE_INTERVAL);
+    setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
     
-    // Load saved notes
-    const savedNote = localStorage.getItem('devDashboardNote');
-    if (savedNote) {
-        noteElement.value = savedNote;
-    }
+    // Add scroll event listener for card navigation
+    notificationsContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const direction = e.deltaY > 0 ? 1 : -1;
+        scrollNotifications(direction);
+    }, { passive: false });
     
-    // Load saved theme
-    const currentTheme = localStorage.getItem('devDashboardTheme');
-    if (currentTheme === 'light') {
-        bodyElement.classList.add('light-mode');
-    }
-    
-    // Setup event listeners
-    themeToggleButton.addEventListener('click', () => {
-        bodyElement.classList.toggle('light-mode');
-        const theme = bodyElement.classList.contains('light-mode') ? 'light' : 'dark';
-        localStorage.setItem('devDashboardTheme', theme);
-        showToast(`Switched to ${theme} mode`, 'info', 2000);
+    // Add touch support for mobile
+    let startY = 0;
+    notificationsContainer.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
     });
     
-    // Refresh button listeners
-    hnRefreshBtn.addEventListener('click', refreshHackerNews);
-    redditRefreshBtn.addEventListener('click', refreshReddit);
-    weatherRefreshBtn.addEventListener('click', refreshWeather);
-    notesRefreshBtn.addEventListener('click', clearNotes);
-    
-    // Reddit input listeners
-    subredditLoadButton.addEventListener('click', handleSubredditLoad);
-    subredditInputElement.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            handleSubredditLoad();
+    notificationsContainer.addEventListener('touchend', (e) => {
+        const endY = e.changedTouches[0].clientY;
+        const diff = startY - endY;
+        
+        if (Math.abs(diff) > 50) { // Minimum swipe distance
+            const direction = diff > 0 ? 1 : -1;
+            scrollNotifications(direction);
         }
     });
     
-    // Notes auto-save with debouncing
-    const debouncedSaveNotes = debounce(() => {
-        localStorage.setItem('devDashboardNote', noteElement.value);
-    }, 500);
-    
-    noteElement.addEventListener('input', debouncedSaveNotes);
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', handleKeyboardShortcuts);
-    
-    // Initial data fetch
-    fetchHackerNews(false);
-    fetchReddit(DEFAULT_SUBREDDIT, false);
-    getCurrentLocation();
-    
-    // Setup auto-refresh
-    setupAutoRefresh();
-    
-    // Show welcome message
+    // Welcome message
     setTimeout(() => {
-        showToast('Welcome to Gateway Dashboard! Press Ctrl+R to refresh all, Ctrl+T to toggle theme, Ctrl+/ to focus search.', 'info', 8000);
+        showToast('Welcome to your personal Gateway.', 'info', 6000);
     }, 1000);
 }
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
-    Object.values(refreshIntervals).forEach(interval => clearInterval(interval));
+    // if (wallpaperInterval) clearInterval(wallpaperInterval);
+    if (notificationInterval) clearInterval(notificationInterval);
 });
 
 // Start the application

@@ -1,134 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gateway Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gateway</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Background Canvas -->
-  <canvas id="background"></canvas>
+    
 
-  <!-- Main Container -->
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <h1 class="dashboard-title">Gateway Dashboard</h1>
-      <div class="time-date-weather">
-        <div id="time">00:00:00</div>
-        <div id="date">Loading...</div>
-        <div id="weather">
-          <i class="fas fa-map-marker-alt"></i>
-          <span>Loading weather...</span>
-        </div>
-      </div>
-      <button class="theme-toggle" id="themeToggle">
-        <i class="fas fa-moon"></i>
-        <i class="fas fa-sun"></i>
-        <span>Theme</span>
-      </button>
-    </header>
-
-    <!-- Content Grid -->
-    <main class="content">
-      <!-- Hacker News Card -->
-      <section class="card">
-        <div class="card-header">
-          <div class="header-top">
-            <div>
-              <i class="fab fa-hacker-news"></i>
-              <h2>Hacker News</h2>
+    <main class="container">
+        <div id="center-widget">
+            <div id="time">00:00</div>
+            <div id="date">Loading...</div>
+            <div id="weather">
+                <i class="fas fa-spinner fa-spin"></i> Loading weather...
             </div>
-            <button class="refresh-btn" id="hnRefresh" title="Refresh Hacker News">
-              <i class="fas fa-sync-alt"></i>
-            </button>
-          </div>
         </div>
-        <div class="posts" id="hnPosts">
-          <div class="loading">
-            <i class="fas fa-spinner"></i>
-            <span>Loading Hacker News...</span>
-          </div>
-        </div>
-      </section>
 
-      <!-- Reddit Card -->
-      <section class="card">
-        <div class="card-header">
-          <div class="header-top">
-            <div>
-              <i class="fab fa-reddit"></i>
-              <h2 id="redditTitle">r/programming</h2>
-            </div>
-            <button class="refresh-btn" id="redditRefresh" title="Refresh Reddit">
-              <i class="fas fa-sync-alt"></i>
-            </button>
-          </div>
-          <div class="reddit-input">
-            <input type="text" id="subredditInput" placeholder="Enter subreddit name..." value="programming" />
-            <button id="subredditLoad">
-              <i class="fas fa-arrow-right"></i>
-              <i class="fas fa-spinner"></i>
-              <span>Load</span>
-            </button>
-          </div>
+        <div id="notifications-container">
+            <!-- Hacker News notifications will be injected here -->
         </div>
-        <div class="posts" id="redditPosts">
-          <div class="loading">
-            <i class="fas fa-spinner"></i>
-            <span>Loading Reddit...</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Notes Card -->
-      <section class="card">
-        <div class="card-header">
-          <div class="header-top">
-            <div>
-              <i class="fas fa-sticky-note"></i>
-              <h2>Quick Notes</h2>
-            </div>
-            <button class="refresh-btn" id="notesRefresh" title="Clear Notes">
-              <i class="fas fa-trash-alt"></i>
-            </button>
-          </div>
-        </div>
-        <div class="notes-container">
-          <textarea id="notes" placeholder="Write your notes here... (auto-saved)"></textarea>
-        </div>
-      </section>
-
-      <!-- Weather Details Card -->
-      <section class="card">
-        <div class="card-header">
-          <div class="header-top">
-            <div>
-              <i class="fas fa-cloud-sun"></i>
-              <h2>Weather Details</h2>
-            </div>
-            <button class="refresh-btn" id="weatherRefresh" title="Refresh Weather">
-              <i class="fas fa-sync-alt"></i>
-            </button>
-          </div>
-        </div>
-        <div class="weather-details" id="weatherDetails">
-          <div class="loading">
-            <i class="fas fa-spinner"></i>
-            <span>Loading weather details...</span>
-          </div>
-        </div>
-      </section>
     </main>
-  </div>
 
-  <!-- Toast Notifications Container -->
-  <div id="toastContainer" class="toast-container"></div>
+    <div id="toastContainer" class="toast-container"></div>
 
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
 

@@ -181,9 +181,9 @@ function cycleNotification() {
     // Add to beginning of allNotifications array
     allNotifications.unshift(notificationCard);
     
-    // Keep maximum of 4 cards - remove old ones (reduced for compact view)
-    if (allNotifications.length > 4) {
-        allNotifications.splice(4);
+    // Keep maximum of 3 cards - remove old ones (reduced for very compact view)
+    if (allNotifications.length > 3) {
+        allNotifications.splice(3);
     }
     
     // Reset visibleStartIndex to show the newest card
@@ -199,15 +199,15 @@ function updateNotificationDisplay() {
     // Clear container
     notificationsContainer.innerHTML = '';
     
-    // Show up to 4 cards starting from visibleStartIndex (reduced for compact view)
-    const maxVisible = 4;
+    // Show up to 3 cards starting from visibleStartIndex (reduced for very compact view)
+    const maxVisible = 3;
     for (let i = 0; i < Math.min(maxVisible, allNotifications.length); i++) {
         const cardIndex = (visibleStartIndex + i) % allNotifications.length;
         const card = allNotifications[cardIndex].cloneNode(true);
         
         // Apply stacking styles
         card.style.position = 'absolute';
-        card.style.top = `${i * 4}px`; // Very small offset for compact stacking
+        card.style.top = `${i * 3}px`; // Very tight stacking
         card.style.left = '0';
         card.style.right = '0';
         card.style.zIndex = maxVisible - i;
@@ -221,18 +221,14 @@ function updateNotificationDisplay() {
             card.style.filter = 'blur(0px)';
         } else if (i === 1) {
             card.classList.add('old');
-            card.style.transform = 'translateY(4px) scale(0.98)';
-            card.style.opacity = '0.7';
+            card.style.transform = 'translateY(3px) scale(0.98)';
+            card.style.opacity = '0.6';
             card.style.filter = 'blur(1px)';
-        } else if (i === 2) {
-            card.classList.add('older');
-            card.style.transform = 'translateY(8px) scale(0.96)';
-            card.style.opacity = '0.5';
-            card.style.filter = 'blur(2px)';
         } else {
-            card.style.transform = 'translateY(12px) scale(0.94)';
-            card.style.opacity = '0.3';
-            card.style.filter = 'blur(3px)';
+            card.classList.add('older');
+            card.style.transform = 'translateY(6px) scale(0.96)';
+            card.style.opacity = '0.4';
+            card.style.filter = 'blur(2px)';
         }
         
         notificationsContainer.appendChild(card);

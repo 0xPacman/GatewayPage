@@ -11,6 +11,11 @@
     --warning-color: #f59e0b;
     --error-color: #f87171;
     --info-color: #60a5fa;
+    --bg-angle: 45deg;
+    --color-1: #a1c4fd;   /* morning */
+    --color-2: #c2e9fb;
+    --color-3: #ffffff;
+    --text-color: #000000;
 }
 
 /* Multi-directional gradient animation */
@@ -45,9 +50,11 @@ body {
     height: 100vh;
     width: 100vw;
     text-shadow: 0 2px 4px var(--shadow-color);
-    background: linear-gradient(45deg, #fde68a, #f59e0b, #86ddfe, #fde68a);
-    background-size: 400% 400%;
-    animation: gradientAnimation 60s linear infinite;
+    background: linear-gradient(var(--bg-angle),
+      var(--color-1),
+      var(--color-2),
+      var(--color-3));
+    transition: background 2s ease, color 2s ease;
 }
 
 .background-container {

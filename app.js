@@ -268,17 +268,46 @@ function getCurrentLocation() {
     }
 }
 
+// Time-based theme update
+function updateTheme() {
+  const hour = new Date().getHours();
+  let c1, c2, c3, text;
+
+  if (hour >= 6 && hour < 12) {
+    // Morning
+    c1 = '#a1c4fd'; c2 = '#c2e9fb'; c3 = '#ffffff';
+    text = '#000000';
+  } else if (hour >= 12 && hour < 18) {
+    // Day
+    c1 = '#fde68a'; c2 = '#f59e0b'; c3 = '#f97316';
+    text = '#000000';
+  } else if (hour >= 18 && hour < 20) {
+    // Evening
+    c1 = '#833ab4'; c2 = '#fd1d1d'; c3 = '#fcb045';
+    text = '#ffffff';
+  } else {
+    // Night
+    c1 = '#0f2027'; c2 = '#203a43'; c3 = '#2c5364';
+    text = '#ffffff';
+  }
+  const root = document.documentElement.style;
+  root.setProperty('--color-1', c1);
+  root.setProperty('--color-2', c2);
+  root.setProperty('--color-3', c3);
+  root.setProperty('--text-color', text);
+}
+
 // Initialization
 function init() {
     // Initial calls
     updateTimeDate();
     getCurrentLocation();
     fetchHackerNews();
-    // updateWallpaper(); // No longer needed with gradient background
+    updateTheme();
 
     // Set intervals
     setInterval(updateTimeDate, 1000);
-    // wallpaperInterval = setInterval(updateWallpaper, WALLPAPER_CHANGE_INTERVAL);
+    setInterval(updateTheme, 60 * 1000);
     setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
     
     // Add scroll event listener for card navigation

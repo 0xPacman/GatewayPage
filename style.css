@@ -94,6 +94,71 @@ body {
     font-size: 8rem;
     font-weight: 700;
     letter-spacing: -0.05em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.1em;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+#time:hover {
+    opacity: 0.8;
+}
+
+.time-digit {
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    height: 1.2em;
+    width: 0.7em;
+    text-align: center;
+}
+
+.time-separator {
+    display: inline-block;
+}
+
+.digit-old {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    animation: slideDown 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.digit-new {
+    position: absolute;
+    top: -1.2em;
+    left: 0;
+    right: 0;
+    animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideDown {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+        filter: blur(0px);
+    }
+    100% {
+        transform: translateY(1.2em);
+        opacity: 0;
+        filter: blur(3px);
+    }
+}
+
+@keyframes slideUp {
+    0% {
+        transform: translateY(0);
+        opacity: 0;
+        filter: blur(3px);
+    }
+    100% {
+        transform: translateY(1.2em);
+        opacity: 1;
+        filter: blur(0px);
+    }
 }
 
 #date {

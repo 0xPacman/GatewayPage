@@ -21,6 +21,8 @@ let hackerNewsStories = [];
 let currentStoryIndex = 0;
 let allNotifications = []; // Store all notification cards
 let visibleStartIndex = 0; // Track which cards are currently visible
+let showSeconds = false; // Track whether to show seconds
+let lastTime = ''; // Track last time to detect changes
 
 // --- Utility Functions ---
 function showToast(message, type = 'info', duration = TOAST_DURATION) {
@@ -69,16 +71,83 @@ function createErrorHTML(title, message) {
 // Time and Date
 function updateTimeDate() {
     const now = new Date();
-    timeElement.textContent = now.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false 
-    });
+    const timeOptions = showSeconds 
+        ? { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
+        : { hour: '2-digit', minute: '2-digit', hour12: false };
+    
+    const newTime = now.toLocaleTimeString('en-US', timeOptions);
+    
+    // Check if this is the first load
+    if (lastTime === '') {
+        // First load - just set the time without animation
+        setTimeWithoutAnimation(newTime);
+    } else if (newTime !== lastTime) {
+        // Time changed - animate the difference
+        animateTimeChange(lastTime, newTime);
+    }
+    
+    lastTime = newTime;
+    
     dateElement.textContent = now.toLocaleDateString('en-US', { 
         weekday: 'long', 
         month: 'long', 
         day: 'numeric' 
     });
+}
+
+function setTimeWithoutAnimation(timeString) {
+    timeElement.innerHTML = '';
+    for (let i = 0; i < timeString.length; i++) {
+        const char = timeString[i];
+        if (char === ':') {
+            const separator = document.createElement('span');
+            separator.className = 'time-separator';
+            separator.textContent = ':';
+            timeElement.appendChild(separator);
+        } else {
+            const digitContainer = document.createElement('span');
+            digitContainer.className = 'time-digit';
+            digitContainer.textContent = char;
+            timeElement.appendChild(digitContainer);
+        }
+    }
+}
+
+function animateTimeChange(oldTime, newTime) {
+    const digitContainers = timeElement.querySelectorAll('.time-digit');
+    let containerIndex = 0;
+    
+    for (let i = 0; i < newTime.length; i++) {
+        const char = newTime[i];
+        
+        if (char !== ':') {
+            const oldChar = oldTime[i] || '';
+            
+            if (char !== oldChar && digitContainers[containerIndex]) {
+                // Create old digit element for slide-down animation
+                const oldDigit = document.createElement('span');
+                oldDigit.className = 'digit-old';
+                oldDigit.textContent = oldChar;
+                
+                // Create new digit element for slide-up animation
+                const newDigit = document.createElement('span');
+                newDigit.className = 'digit-new';
+                newDigit.textContent = char;
+                
+                // Clear container and add both digits
+                const container = digitContainers[containerIndex];
+                container.innerHTML = '';
+                container.appendChild(oldDigit);
+                container.appendChild(newDigit);
+                
+                // Clean up after animation
+                setTimeout(() => {
+                    container.innerHTML = char;
+                }, 600);
+            }
+            containerIndex++;
+        }
+    }
 }
 
 // Wallpaper
@@ -309,6 +378,13 @@ function init() {
     setInterval(updateTimeDate, 1000);
     setInterval(updateTheme, 60 * 1000);
     setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
+    
+    // Add click event to time to toggle seconds display
+    timeElement.addEventListener('click', () => {
+        showSeconds = !showSeconds;
+        lastTime = ''; // Force animation on next update
+        updateTimeDate(); // Update immediately
+    });
     
     // Add scroll event listener for card navigation
     notificationsContainer.addEventListener('wheel', (e) => {

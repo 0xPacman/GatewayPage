@@ -12,6 +12,7 @@ const weatherElement = document.getElementById('weather');
 const notificationsContainer = document.getElementById('notifications-container');
 const toastContainer = document.getElementById('toastContainer');
 const backgroundImage = document.getElementById('background-image');
+// menuClock removed with top bar
 
 // State Management
 let currentLocation = { lat: 32.23, lon: -7.93 }; // Default: Ben Guerir coords
@@ -93,6 +94,9 @@ function updateTimeDate() {
         month: 'long', 
         day: 'numeric' 
     });
+
+    // Mirror simplified time to menu bar clock
+    // menuClock removed
 }
 
 function setTimeWithoutAnimation(timeString) {
@@ -203,31 +207,41 @@ async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon
 
 // Hacker News
 async function fetchHackerNews() {
+    const skeleton = document.getElementById('hn-skeleton');
+    const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), ms));
     try {
-        const idsResponse = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+        const idsResponse = await Promise.race([
+            fetch('https://hacker-news.firebaseio.com/v0/topstories.json'),
+            timeout(8000)
+        ]);
         if (!idsResponse.ok) throw new Error(`HN API Error: ${idsResponse.status}`);
         const ids = await idsResponse.json();
-        const topIds = ids.slice(0, HACKERNEWS_STORIES_COUNT * 2); // Fetch more to ensure we get enough valid stories
-        
-        const storyPromises = topIds.map(id =>
-            fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => res.json())
-        );
-        
+        const topIds = ids.slice(0, HACKERNEWS_STORIES_COUNT * 3); // fetch extra for filtering
+        const storyPromises = topIds.map(id => Promise.race([
+            fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => res.json()),
+            timeout(6000)
+        ]).catch(() => null));
         const stories = await Promise.all(storyPromises);
-        hackerNewsStories = stories.filter(story => story && story.title && story.url);
-        
-        if (hackerNewsStories.length > 0) {
-            currentStoryIndex = 0;
-            cycleNotification(); // Show the first one immediately
-            if (notificationInterval) clearInterval(notificationInterval);
-            notificationInterval = setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
-        } else {
-            notificationsContainer.innerHTML = createErrorHTML('Hacker News', 'No stories found.');
+        hackerNewsStories = stories.filter(story => story && story.title && story.url).slice(0, HACKERNEWS_STORIES_COUNT);
+
+        // Fallback curated sample if API returns nothing
+        if (hackerNewsStories.length === 0) {
+            hackerNewsStories = [
+                { title: 'Hacker News temporarily unavailable', url: 'https://news.ycombinator.com', score: 0, descendants: 0 },
+                { title: 'Retry later for fresh stories', url: 'https://news.ycombinator.com/newest', score: 0, descendants: 0 }
+            ];
         }
-        
+
+        if (skeleton) skeleton.remove();
+        currentStoryIndex = 0;
+        cycleNotification();
+        if (notificationInterval) clearInterval(notificationInterval);
+        notificationInterval = setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
     } catch (error) {
         console.error('Error fetching Hacker News:', error);
-        notificationsContainer.innerHTML = createErrorHTML('Hacker News', error.message);
+        if (skeleton) skeleton.remove();
+        notificationsContainer.innerHTML = createErrorHTML('Hacker News', error.message || 'Unknown error');
+        showToast('Hacker News feed unavailable', 'warning');
     }
 }
 
@@ -276,7 +290,7 @@ function updateNotificationDisplay() {
         
         // Apply stacking styles
         card.style.position = 'absolute';
-        card.style.top = `${i * 3}px`; // Very tight stacking
+        card.style.top = `${i * 8}px`; // Increased spacing between cards
         card.style.left = '0';
         card.style.right = '0';
         card.style.zIndex = maxVisible - i;
@@ -290,12 +304,12 @@ function updateNotificationDisplay() {
             card.style.filter = 'blur(0px)';
         } else if (i === 1) {
             card.classList.add('old');
-            card.style.transform = 'translateY(3px) scale(0.98)';
+            card.style.transform = 'translateY(12px) scale(0.98)';
             card.style.opacity = '0.6';
             card.style.filter = 'blur(1px)';
         } else {
             card.classList.add('older');
-            card.style.transform = 'translateY(6px) scale(0.96)';
+            card.style.transform = 'translateY(24px) scale(0.96)';
             card.style.opacity = '0.4';
             card.style.filter = 'blur(2px)';
         }
@@ -413,6 +427,31 @@ function init() {
     setTimeout(() => {
         showToast('Welcome to your personal Gateway.', 'info', 6000);
     }, 1000);
+
+    // Dock magnify (progressive enhancement)
+    const dock = document.querySelector('.dock-inner');
+    if (dock) {
+        const items = Array.from(dock.querySelectorAll('.dock-item'));
+        const magnify = (e) => {
+            const rect = dock.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            items.forEach(item => {
+                const itemRect = item.getBoundingClientRect();
+                const centerX = (itemRect.left + itemRect.right) / 2 - rect.left;
+                const dist = Math.abs(mouseX - centerX);
+                const influence = Math.max(0, 1 - dist / 180); // range
+                const scale = 1 + influence * 0.28; // max scale 1.28
+                const translateY = -8 - influence * 8; // lift more when closer
+                item.style.transform = `translateY(${translateY}px) scale(${scale})`;
+            });
+        };
+        dock.addEventListener('mousemove', magnify);
+        dock.addEventListener('mouseleave', () => {
+            items.forEach(item => {
+                item.style.transform = '';
+            });
+        });
+    }
 }
 
 // Cleanup on page unload

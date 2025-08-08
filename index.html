@@ -9,23 +9,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" />
+    <meta name="theme-color" content="#0f1115" />
 </head>
 <body>
-    
+    <!-- Ambient dynamic background shapes -->
+    <div class="background-effects" aria-hidden="true">
+        <div class="orb orb-a"></div>
+        <div class="orb orb-b"></div>
+        <div class="orb orb-c"></div>
+        <!-- Whimsical layered bokeh dots -->
+        <div class="bokeh" aria-hidden="true">
+            <span class="bokeh-dot d1"></span>
+            <span class="bokeh-dot d2"></span>
+            <span class="bokeh-dot d3"></span>
+            <span class="bokeh-dot d4"></span>
+            <span class="bokeh-dot d5"></span>
+        </div>
+        <div class="noise-layer"></div>
+    </div>
+
+    <!-- Removed top menu bar as per user request -->
 
     <main class="container">
-        <div id="center-widget">
-            <div id="time">00:00</div>
-            <div id="date">Loading...</div>
-            <div id="weather">
-                <i class="fas fa-spinner fa-spin"></i> Loading weather...
+        <section id="center-widget" class="glass-card depth-xl" aria-label="Clock and weather widget">
+            <div class="widget-inner">
+                <div id="time" aria-live="polite">00:00</div>
+                <div id="date">Loading...</div>
+                <div id="weather" aria-live="polite">
+                    <i class="fas fa-spinner fa-spin"></i> Loading weather...
+                </div>
             </div>
-        </div>
+        </section>
 
-        <div id="notifications-container">
-            <!-- Hacker News notifications will be injected here -->
-        </div>
+        <aside id="notifications-container" class="notification-stack" aria-label="Live Hacker News feed">
+            <!-- Initial skeleton placeholder -->
+            <div class="notification-card" id="hn-skeleton">
+                <div class="notification-skeleton">
+                    <div class="skeleton-bar" style="width:55%"></div>
+                    <div class="skeleton-bar" style="width:82%"></div>
+                    <div class="skeleton-bar" style="width:40%"></div>
+                </div>
+            </div>
+        </aside>
     </main>
+
+    <!-- Bottom dock (decorative) -->
+    <div class="dock" aria-hidden="true">
+        <div class="dock-inner">
+            <button class="dock-item" title="Refresh News" onclick="location.reload()"><i class="fas fa-rotate"></i></button>
+            <button class="dock-item" title="Toggle Seconds" onclick="document.getElementById('time').click()"><i class="fas fa-stopwatch"></i></button>
+            <a class="dock-item" title="Hacker News" href="https://news.ycombinator.com" target="_blank" rel="noopener"><i class="fab fa-hacker-news"></i></a>
+            <button class="dock-item" title="Theme" onclick="document.body.classList.toggle('alt-theme')"><i class="fas fa-moon"></i></button>
+        </div>
+    </div>
 
     <div id="toastContainer" class="toast-container"></div>
 

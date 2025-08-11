@@ -25,6 +25,107 @@ let visibleStartIndex = 0; // Track which cards are currently visible
 let showSeconds = false; // Track whether to show seconds
 let lastTime = ''; // Track last time to detect changes
 
+// Sites for Start Menu (popular + useful)
+const POPULAR_SITES = [
+    { title: 'Google', url: 'https://www.google.com', icon: 'https://www.google.com/favicon.ico' },
+    { title: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/s/desktop/1c8e08d0/img/favicon_144x144.png' },
+    { title: 'Twitter', url: 'https://twitter.com', icon: 'https://abs.twimg.com/favicons/twitter.3.ico' },
+    { title: 'Reddit', url: 'https://www.reddit.com', icon: 'https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png' },
+    { title: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png' },
+    { title: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico' },
+    { title: 'Hacker News', url: 'https://news.ycombinator.com', icon: 'https://news.ycombinator.com/favicon.ico' },
+    { title: 'Wikipedia', url: 'https://wikipedia.org', icon: 'https://www.wikipedia.org/static/favicon/wikipedia.ico' },
+    { title: 'Product Hunt', url: 'https://www.producthunt.com', icon: 'https://ph-files.imgix.net/production/ph-assets/favicon.png' },
+    { title: 'Zoom Earth', url: 'https://zoom.earth', icon: 'https://zoom.earth/wp-content/uploads/2023/04/cropped-zoom-earth-192x192.png' },
+    { title: 'Gmail', url: 'https://mail.google.com', icon: 'https://ssl.gstatic.com/ui/v1/icons/mail/favicon.ico' },
+    { title: 'Drive', url: 'https://drive.google.com', icon: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png' },
+    { title: 'LinkedIn', url: 'https://www.linkedin.com', icon: 'https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico' },
+    { title: 'Facebook', url: 'https://www.facebook.com', icon: 'https://static.xx.fbcdn.net/rsrc.php/yD/r/d4ZIVX-5C-b.ico' },
+    { title: 'Instagram', url: 'https://www.instagram.com', icon: 'https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png' },
+    { title: 'Netflix', url: 'https://www.netflix.com', icon: 'https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2016.ico' },
+    { title: 'Amazon', url: 'https://www.amazon.com', icon: 'https://www.amazon.com/favicon.ico' },
+    { title: 'Twitch', url: 'https://www.twitch.tv', icon: 'https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png' },
+    { title: 'Discord', url: 'https://discord.com', icon: 'https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico' },
+    { title: 'OpenAI', url: 'https://openai.com', icon: 'https://openai.com/favicon.ico' },
+    { title: 'BBC', url: 'https://www.bbc.com', icon: 'https://static.files.bbci.co.uk/core/website/assets/static/favicon/favicon-32x32.png' },
+    { title: 'NYTimes', url: 'https://www.nytimes.com', icon: 'https://www.nytimes.com/vi-assets/static-assets/favicon.ico' },
+    { title: 'The Verge', url: 'https://www.theverge.com', icon: 'https://www.theverge.com/favicon.ico' },
+    { title: 'Bloomberg', url: 'https://www.bloomberg.com', icon: 'https://www.bloomberg.com/favicon.ico' },
+    { title: 'Dev.to', url: 'https://dev.to', icon: 'https://practicaldev-herokuapp-com.freetls.fastly.net/assets/devlogo-pwa-192.png' },
+
+    // Additions
+    { title: 'DuckDuckGo', url: 'https://duckduckgo.com', icon: 'https://duckduckgo.com/favicon.ico' },
+    { title: 'MDN Web Docs', url: 'https://developer.mozilla.org', icon: 'https://developer.mozilla.org/favicon-48x48.cbbd161b.png' },
+    { title: 'GitLab', url: 'https://gitlab.com', icon: 'https://about.gitlab.com/ico/favicon.ico' },
+    { title: 'CodePen', url: 'https://codepen.io', icon: 'https://codepen.io/favicon.ico' },
+    { title: 'JSFiddle', url: 'https://jsfiddle.net', icon: 'https://jsfiddle.net/favicon.ico' },
+    { title: 'npm', url: 'https://www.npmjs.com', icon: 'https://www.npmjs.com/favicon.ico' },
+    { title: 'Node.js', url: 'https://nodejs.org', icon: 'https://nodejs.org/static/images/favicons/favicon-32x32.png' },
+    { title: 'React', url: 'https://react.dev', icon: 'https://react.dev/favicon.ico' },
+    { title: 'Vue', url: 'https://vuejs.org', icon: 'https://vuejs.org/images/icons/favicon-32x32.png' },
+    { title: 'Angular', url: 'https://angular.io', icon: 'https://angular.io/assets/images/favicons/favicon-32x32.png' },
+    { title: 'TypeScript', url: 'https://www.typescriptlang.org', icon: 'https://www.typescriptlang.org/favicon-32x32.png' },
+    { title: 'Tailwind CSS', url: 'https://tailwindcss.com', icon: 'https://tailwindcss.com/favicons/favicon-32x32.png' },
+    { title: 'Vite', url: 'https://vitejs.dev', icon: 'https://vitejs.dev/logo.svg' },
+    { title: 'Webpack', url: 'https://webpack.js.org', icon: 'https://webpack.js.org/favicon.ico' },
+
+    { title: 'freeCodeCamp', url: 'https://www.freecodecamp.org', icon: 'https://www.freecodecamp.org/favicon-32x32.png' },
+    { title: 'Coursera', url: 'https://www.coursera.org', icon: 'https://www.coursera.org/favicon.ico' },
+    { title: 'Khan Academy', url: 'https://www.khanacademy.org', icon: 'https://www.khanacademy.org/favicon.ico' },
+    { title: 'Udemy', url: 'https://www.udemy.com', icon: 'https://www.udemy.com/staticx/udemy/images/v7/favicon-32x32.png' },
+
+    { title: 'Slack', url: 'https://slack.com', icon: 'https://a.slack-edge.com/80588/marketing/img/meta/favicon-32.png' },
+    { title: 'Notion', url: 'https://www.notion.so', icon: 'https://www.notion.so/images/favicon.ico' },
+    { title: 'Trello', url: 'https://trello.com', icon: 'https://trello.com/favicon.ico' },
+    { title: 'Asana', url: 'https://asana.com', icon: 'https://asana.com/favicon-32x32.png' },
+    { title: 'Todoist', url: 'https://todoist.com', icon: 'https://todoist.com/static/favicon/favicon-32x32.png' },
+
+    { title: 'Google Maps', url: 'https://maps.google.com' },
+    { title: 'Google Calendar', url: 'https://calendar.google.com', icon: 'https://calendar.google.com/googlecalendar/images/favicons_2020q4/calendar_31_32.png' },
+    { title: 'Google Photos', url: 'https://photos.google.com' },
+
+    { title: 'Spotify', url: 'https://open.spotify.com', icon: 'https://open.spotify.com/favicon.ico' },
+    { title: 'Apple', url: 'https://www.apple.com', icon: 'https://www.apple.com/favicon.ico' },
+    { title: 'Microsoft', url: 'https://www.microsoft.com', icon: 'https://www.microsoft.com/favicon.ico' },
+    { title: 'Outlook', url: 'https://outlook.office.com', icon: 'https://outlook.office.com/favicon.ico' },
+    { title: 'OneDrive', url: 'https://onedrive.live.com', icon: 'https://onedrive.live.com/favicon.ico' },
+    { title: 'Office', url: 'https://www.office.com', icon: 'https://www.office.com/favicon.ico' },
+
+    { title: 'AWS Console', url: 'https://console.aws.amazon.com', icon: 'https://a0.awsstatic.com/libra-css/images/site/fav/favicon.ico' },
+    { title: 'Azure Portal', url: 'https://portal.azure.com', icon: 'https://portal.azure.com/favicon.ico' },
+    { title: 'Google Cloud Console', url: 'https://console.cloud.google.com', icon: 'https://cloud.google.com/_static/cloud/images/favicons/onecloud/favicon.ico' },
+
+    { title: 'Ars Technica', url: 'https://arstechnica.com', icon: 'https://cdn.arstechnica.net/wp-content/themes/ars/assets/img/favicons/favicon-32x32.png' },
+    { title: 'TechCrunch', url: 'https://techcrunch.com', icon: 'https://techcrunch.com/favicon.ico' },
+    { title: 'Wired', url: 'https://www.wired.com', icon: 'https://www.wired.com/favicon.ico' },
+    { title: 'The Guardian', url: 'https://www.theguardian.com', icon: 'https://www.theguardian.com/favicon.ico' },
+    { title: 'Reuters', url: 'https://www.reuters.com', icon: 'https://www.reuters.com/pf/resources/images/reuters/favicon-32x32.png' },
+    { title: 'AP News', url: 'https://apnews.com', icon: 'https://apnews.com/favicon.ico' },
+
+    { title: 'Yahoo Finance', url: 'https://finance.yahoo.com', icon: 'https://finance.yahoo.com/favicon.ico' },
+    { title: 'CoinMarketCap', url: 'https://coinmarketcap.com', icon: 'https://s2.coinmarketcap.com/static/cloud/img/coinmarketcap_32x32.png' },
+    { title: 'TradingView', url: 'https://www.tradingview.com', icon: 'https://www.tradingview.com/favicon.ico' },
+
+    { title: 'Medium', url: 'https://medium.com', icon: 'https://medium.com/favicon.ico' },
+    { title: 'Lobsters', url: 'https://lobste.rs', icon: 'https://lobste.rs/favicon.ico' },
+    { title: 'Stack Exchange', url: 'https://stackexchange.com', icon: 'https://stackexchange.com/favicon.ico' },
+
+    { title: 'Speedtest', url: 'https://www.speedtest.net', icon: 'https://www.speedtest.net/favicon.ico' },
+    { title: 'WhatsApp Web', url: 'https://web.whatsapp.com', icon: 'https://web.whatsapp.com/img/favicon/1x/favicon.png' },
+    { title: 'Telegram Web', url: 'https://web.telegram.org', icon: 'https://web.telegram.org/favicon.ico' },
+
+    { title: 'eBay', url: 'https://www.ebay.com', icon: 'https://www.ebay.com/favicon.ico' },
+    { title: 'AliExpress', url: 'https://www.aliexpress.com', icon: 'https://www.aliexpress.com/favicon.ico' },
+
+    { title: 'Pinterest', url: 'https://www.pinterest.com', icon: 'https://www.pinterest.com/favicon.ico' },
+    { title: 'Dribbble', url: 'https://dribbble.com', icon: 'https://dribbble.com/favicon.ico' },
+    { title: 'Behance', url: 'https://www.behance.net', icon: 'https://www.behance.net/favicon.ico' },
+
+    { title: 'IMDb', url: 'https://www.imdb.com', icon: 'https://m.media-amazon.com/images/G/01/imdb/images/mobile/favicon_32-2161679182._CB482747980_.png' },
+    { title: 'Windy', url: 'https://www.windy.com', icon: 'https://www.windy.com/img/windy-32.png' },
+    { title: 'OpenStreetMap', url: 'https://www.openstreetmap.org', icon: 'https://www.openstreetmap.org/favicon.ico' }
+];
+
 // --- Utility Functions ---
 function showToast(message, type = 'info', duration = TOAST_DURATION) {
     const toast = document.createElement('div');
@@ -428,29 +529,115 @@ function init() {
         showToast('Welcome to your personal Gateway.', 'info', 6000);
     }, 1000);
 
-    // Dock magnify (progressive enhancement)
-    const dock = document.querySelector('.dock-inner');
-    if (dock) {
-        const items = Array.from(dock.querySelectorAll('.dock-item'));
-        const magnify = (e) => {
-            const rect = dock.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            items.forEach(item => {
-                const itemRect = item.getBoundingClientRect();
-                const centerX = (itemRect.left + itemRect.right) / 2 - rect.left;
-                const dist = Math.abs(mouseX - centerX);
-                const influence = Math.max(0, 1 - dist / 180); // range
-                const scale = 1 + influence * 0.28; // max scale 1.28
-                const translateY = -8 - influence * 8; // lift more when closer
-                item.style.transform = `translateY(${translateY}px) scale(${scale})`;
-            });
+    // Taskbar handlers
+    const btnTheme = document.getElementById('btnTheme');
+    const btnStart = document.getElementById('btnStart');
+    const btnRefresh = document.getElementById('btnRefresh');
+    const startMenu = document.getElementById('startMenu');
+    const overlay = document.getElementById('overlay');
+    const siteGrid = document.getElementById('siteGrid');
+    const siteSearch = document.getElementById('siteSearch');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const pageDots = document.getElementById('pageDots');
+
+    const toggleTheme = () => document.body.classList.toggle('alt-theme');
+    const doRefresh = () => location.reload();
+    window.toggleTheme = toggleTheme;
+    window.doRefresh = doRefresh;
+
+    const openStart = () => {
+        startMenu.hidden = false; overlay.hidden = false;
+        requestAnimationFrame(() => { startMenu.classList.add('open'); btnStart.setAttribute('aria-expanded', 'true'); siteSearch?.focus(); });
+    };
+    const closeStart = () => {
+        startMenu.classList.remove('open'); btnStart.setAttribute('aria-expanded', 'false');
+        setTimeout(() => { startMenu.hidden = true; overlay.hidden = true; }, 200);
+    };
+    const toggleStart = () => startMenu.hidden ? openStart() : closeStart();
+    window.toggleStartMenu = toggleStart;
+    if (startMenu && overlay) {
+        overlay.addEventListener('click', closeStart);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !startMenu.hidden) closeStart(); });
+    }
+
+    // Populate sites
+    if (siteGrid) {
+        const makeCard = (site) => {
+            const a = document.createElement('a');
+            a.className = 'site-card';
+            a.href = site.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+                        const iconUrl = site.icon || `https://www.google.com/s2/favicons?domain=${new URL(site.url).hostname}&sz=64`;
+                        a.innerHTML = `
+                            <span class="site-icon"><img src="${iconUrl}" alt="${site.title}" onerror="this.src='https://www.google.com/s2/favicons?domain=${new URL(site.url).hostname}&sz=64'"/></span>
+                            <span class="site-title">${site.title}</span>
+                        `;
+            return a;
         };
-        dock.addEventListener('mousemove', magnify);
-        dock.addEventListener('mouseleave', () => {
-            items.forEach(item => {
-                item.style.transform = '';
+        let filtered = [...POPULAR_SITES];
+        let currentPage = 0;
+
+        const getPerPage = () => {
+            // Mirror CSS grid: 4 cols desktop, 3 on small
+            const cols = window.matchMedia('(max-width: 520px)').matches ? 3 : 4;
+            const rows = 3; // fixed rows, no scroll
+            return cols * rows; // 12 desktop, 9 mobile
+        };
+
+        const updateDots = (pages) => {
+            pageDots.innerHTML = '';
+            for (let i = 0; i < pages; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'page-dot' + (i === currentPage ? ' active' : '');
+                dot.setAttribute('role', 'tab');
+                dot.setAttribute('aria-selected', i === currentPage ? 'true' : 'false');
+                dot.addEventListener('click', () => { currentPage = i; renderPage(); });
+                pageDots.appendChild(dot);
+            }
+        };
+
+        const renderPage = () => {
+            const perPage = getPerPage();
+            const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+            currentPage = Math.max(0, Math.min(currentPage, totalPages - 1));
+            const start = currentPage * perPage;
+            const slice = filtered.slice(start, start + perPage);
+            siteGrid.innerHTML = '';
+            slice.forEach(s => siteGrid.appendChild(makeCard(s)));
+            updateDots(totalPages);
+            // Update nav state
+            if (prevPageBtn) prevPageBtn.disabled = currentPage === 0;
+            if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages - 1;
+        };
+
+        // Initial render
+        renderPage();
+
+        // Search
+        if (siteSearch) {
+            siteSearch.addEventListener('input', () => {
+                const q = siteSearch.value.trim().toLowerCase();
+                filtered = !q ? [...POPULAR_SITES] : POPULAR_SITES.filter(s => s.title.toLowerCase().includes(q) || s.url.toLowerCase().includes(q));
+                currentPage = 0;
+                renderPage();
             });
-        });
+        }
+
+        // Nav buttons
+        if (prevPageBtn) prevPageBtn.addEventListener('click', () => { currentPage = Math.max(0, currentPage - 1); renderPage(); });
+        if (nextPageBtn) nextPageBtn.addEventListener('click', () => { currentPage = currentPage + 1; renderPage(); });
+
+        // Recompute on resize for responsive cols
+        window.addEventListener('resize', () => { renderPage(); });
+
+        if (siteSearch) {
+            siteSearch.addEventListener('input', () => {
+                const q = siteSearch.value.trim().toLowerCase();
+                if (!q) return render(POPULAR_SITES);
+                const filtered = POPULAR_SITES.filter(s => s.title.toLowerCase().includes(q) || s.url.toLowerCase().includes(q));
+                render(filtered);
+            });
+        }
     }
 
     // Make weather widget open Zoom Earth on click / keyboard

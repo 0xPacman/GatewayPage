@@ -505,10 +505,48 @@ body.alt-theme {
 /* (Menu bar removed) */
 
 /* Dock */
-.dock { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); padding:10px 18px 16px; border-radius:32px; backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); background: linear-gradient(120deg, var(--dock-bg), rgba(255,255,255,0.35)); border:1px solid var(--dock-border); box-shadow:0 8px 28px -8px rgba(0,0,0,0.45), 0 4px 10px -2px rgba(0,0,0,0.25); z-index:1400; overflow:hidden; }
-.dock:before, .dock:after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; }
-.dock:before { background: radial-gradient(120% 100% at 12% 0%, rgba(255,255,255,0.45), rgba(255,255,255,0.12) 55%, rgba(255,255,255,0) 80%), linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); mix-blend-mode: screen; opacity:.9; }
-.dock:after { box-shadow: inset 2px 2px 2px rgba(255,255,255,0.45), inset -1px -1px 1px rgba(0,0,0,0.06); filter: url(#lg-distort-1); opacity:.45; }
+.dock { display:none; }
+
+/* Taskbar */
+.taskbar { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); display:flex; gap:14px; padding:8px 12px; border-radius:16px; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: linear-gradient(120deg, var(--dock-bg), rgba(255,255,255,0.35)); border:1px solid var(--dock-border); box-shadow:0 8px 28px -8px rgba(0,0,0,0.45), 0 4px 10px -2px rgba(0,0,0,0.25); z-index:1400; }
+.task-btn { -webkit-appearance:none; appearance:none; width:46px; height:46px; border-radius:12px; background:linear-gradient(145deg,rgba(255,255,255,0.75),rgba(255,255,255,0.55)); border:1px solid rgba(255,255,255,0.65); color:var(--text-color); display:flex; align-items:center; justify-content:center; font-size:1.2rem; cursor:pointer; box-shadow:0 6px 16px -4px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.25); transition: transform .25s var(--ease), box-shadow .25s var(--ease); }
+.task-btn:hover { transform: translateY(-4px); box-shadow:0 14px 28px -10px rgba(0,0,0,0.55), 0 4px 8px rgba(0,0,0,0.35); }
+.task-btn:active { transform: translateY(-1px) scale(.98); }
+.start-btn i { font-size:1.1rem; }
+
+/* Overlay for modal */
+.overlay { position:fixed; inset:0; background: rgba(0,0,0,0.35); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); z-index:1399; }
+
+/* Start menu panel */
+.start-menu { position:fixed; left:50%; bottom:92px; transform: translateX(-50%) scale(.98); opacity:0; pointer-events:none; transition: transform .28s var(--ease), opacity .28s var(--ease); z-index:1500; }
+.start-menu.open { transform: translateX(-50%) scale(1); opacity:1; pointer-events:auto; }
+.start-inner { width:min(92vw, 820px); border-radius:22px; padding:18px; background: linear-gradient(160deg, rgba(255,255,255,0.55), rgba(255,255,255,0.22)); border:1px solid rgba(255,255,255,0.55); backdrop-filter: blur(26px) saturate(180%); -webkit-backdrop-filter: blur(26px) saturate(180%); box-shadow:0 20px 60px -18px rgba(0,0,0,0.5), 0 6px 16px rgba(0,0,0,0.25); position:relative; overflow:hidden; }
+.start-inner:before, .start-inner:after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; }
+.start-inner:before { background: radial-gradient(100% 80% at 10% 0%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%); mix-blend-mode: screen; }
+.start-inner:after { box-shadow: inset 1px 1px 1px rgba(255,255,255,0.5), inset -1px -1px 1px rgba(0,0,0,0.05); filter:url(#lg-distort-1); opacity:.35; }
+.start-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
+.start-header h2 { font-size:1rem; opacity:.85; }
+.start-search { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background: linear-gradient(145deg, rgba(255,255,255,0.65), rgba(255,255,255,0.25)); border:1px solid rgba(255,255,255,0.55); box-shadow: inset 0 1px 1px rgba(255,255,255,0.6); }
+.start-search input { border:none; outline:none; background:transparent; width:260px; color:var(--text-color); font-size:0.95rem; }
+.site-grid { display:grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 72px; gap:14px; padding:8px 2px 2px; max-height:none; overflow:hidden; }
+.start-footer { display:flex; align-items:center; justify-content:center; gap:14px; padding-top:12px; }
+.nav-btn { width:42px; height:42px; border-radius:12px; border:1px solid rgba(255,255,255,0.55); background: linear-gradient(145deg, rgba(255,255,255,0.7), rgba(255,255,255,0.35)); color:var(--text-color); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 6px 16px -4px rgba(0,0,0,0.3); }
+.nav-btn:hover { transform: translateY(-2px); }
+.page-dots { display:flex; gap:8px; align-items:center; justify-content:center; min-width:120px; }
+.page-dot { width:8px; height:8px; border-radius:50%; background: rgba(255,255,255,0.55); opacity:.5; transition: transform .2s var(--ease), opacity .2s var(--ease); }
+.page-dot.active { opacity:1; transform: scale(1.4); background: var(--accent); }
+.site-card { display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background: linear-gradient(145deg, rgba(255,255,255,0.6), rgba(255,255,255,0.25)); border:1px solid rgba(255,255,255,0.55); box-shadow:0 6px 18px -8px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.15); text-decoration:none; color:var(--text-color); }
+.site-card:hover { transform: translateY(-2px); }
+.site-icon { width:28px; height:28px; border-radius:8px; overflow:hidden; flex:0 0 auto; }
+.site-icon img { width:100%; height:100%; object-fit:cover; display:block; }
+.site-title { font-weight:600; font-size:0.95rem; letter-spacing:-.01em; }
+
+@media (max-width: 520px) {
+    .taskbar { gap:10px; padding:6px 10px; }
+    .task-btn { width:42px; height:42px; }
+    .start-inner { width:min(94vw, 720px); }
+        .site-grid { grid-template-columns: repeat(3, 1fr); grid-auto-rows: 70px; }
+}
 .dock-inner { display:flex; align-items:center; gap:18px; }
 .dock-item { -webkit-appearance:none; appearance:none; background:linear-gradient(145deg,rgba(255,255,255,0.75),rgba(255,255,255,0.55)); border:1px solid rgba(255,255,255,0.65); width:54px; height:54px; border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:var(--text-color); cursor:pointer; box-shadow:0 6px 16px -4px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.25); position:relative; transition: transform .4s var(--ease), box-shadow .4s var(--ease), filter .5s var(--ease); text-decoration:none; }
 .dock-item:hover { transform:translateY(-8px) scale(1.08); box-shadow:0 14px 28px -10px rgba(0,0,0,0.55), 0 4px 8px rgba(0,0,0,0.35); }

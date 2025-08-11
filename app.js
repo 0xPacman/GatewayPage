@@ -452,6 +452,18 @@ function init() {
             });
         });
     }
+
+    // Make weather widget open Zoom Earth on click / keyboard
+    if (weatherElement) {
+        weatherElement.setAttribute('role', 'button');
+        weatherElement.setAttribute('tabindex', '0');
+        weatherElement.setAttribute('title', 'Open live earth view (Zoom Earth)');
+        const openZoomEarth = () => window.open('https://zoom.earth', '_blank', 'noopener');
+        weatherElement.addEventListener('click', openZoomEarth);
+        weatherElement.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoomEarth(); }
+        });
+    }
 }
 
 // Cleanup on page unload

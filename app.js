@@ -1,666 +1,483 @@
-// Configuration Constants
-const HACKERNEWS_STORIES_COUNT = 5;
-const WEATHER_API_KEY = 'bd6d715c01e7cdbd5cd95b39f2b6c64d'; // Consider moving to environment variable
-const TOAST_DURATION = 5000;
-const WALLPAPER_CHANGE_INTERVAL = 15 * 60 * 1000; // 15 minutes
-const NOTIFICATION_CYCLE_INTERVAL = 1 * 60 * 1000; // 1 minute
+const WEATHER_API_KEY = 'bd6d715c01e7cdbd5cd95b39f2b6c64d';
+const DEFAULT_LOCATION = { lat: 32.23, lon: -7.93 };
+const NEWS_SOURCES = ['All', 'Tech', 'Design', 'Science', 'Dev'];
+const CATEGORIES = ['All', 'AI', 'Dev', 'Design', 'Productivity', 'Learn', 'Media', 'Finance', 'Utilities', 'News'];
 
-// DOM Elements
-const timeElement = document.getElementById('time');
-const dateElement = document.getElementById('date');
-const weatherElement = document.getElementById('weather');
-const notificationsContainer = document.getElementById('notifications-container');
-const toastContainer = document.getElementById('toastContainer');
-const backgroundImage = document.getElementById('background-image');
-const systemStateElement = document.getElementById('systemState');
-// menuClock removed with top bar
+const sites = [
+    { title: 'ChatGPT', url: 'https://chat.openai.com', category: 'AI', tag: 'AI workspace' },
+    { title: 'Claude', url: 'https://claude.ai', category: 'AI', tag: 'AI assistant' },
+    { title: 'Perplexity', url: 'https://www.perplexity.ai', category: 'AI', tag: 'Answer engine' },
+    { title: 'Hugging Face', url: 'https://huggingface.co', category: 'AI', tag: 'Models' },
+    { title: 'GitHub', url: 'https://github.com', category: 'Dev', tag: 'Code' },
+    { title: 'Stack Overflow', url: 'https://stackoverflow.com', category: 'Dev', tag: 'Answers' },
+    { title: 'MDN Web Docs', url: 'https://developer.mozilla.org', category: 'Dev', tag: 'Reference' },
+    { title: 'Vercel', url: 'https://vercel.com', category: 'Dev', tag: 'Deploy' },
+    { title: 'Figma', url: 'https://www.figma.com/community', category: 'Design', tag: 'Community' },
+    { title: 'Dribbble', url: 'https://dribbble.com', category: 'Design', tag: 'Inspiration' },
+    { title: 'Behance', url: 'https://www.behance.net', category: 'Design', tag: 'Portfolios' },
+    { title: 'Mobbin', url: 'https://mobbin.com', category: 'Design', tag: 'Patterns' },
+    { title: 'Notion', url: 'https://www.notion.so', category: 'Productivity', tag: 'Notes' },
+    { title: 'Linear', url: 'https://linear.app', category: 'Productivity', tag: 'Issues' },
+    { title: 'Google Drive', url: 'https://drive.google.com', category: 'Productivity', tag: 'Files' },
+    { title: 'Gmail', url: 'https://mail.google.com', category: 'Productivity', tag: 'Mail' },
+    { title: 'Coursera', url: 'https://www.coursera.org', category: 'Learn', tag: 'Courses' },
+    { title: 'Khan Academy', url: 'https://www.khanacademy.org', category: 'Learn', tag: 'Study' },
+    { title: 'freeCodeCamp', url: 'https://www.freecodecamp.org', category: 'Learn', tag: 'Practice' },
+    { title: 'YouTube', url: 'https://www.youtube.com', category: 'Media', tag: 'Video' },
+    { title: 'Spotify', url: 'https://open.spotify.com', category: 'Media', tag: 'Music' },
+    { title: 'Netflix', url: 'https://www.netflix.com', category: 'Media', tag: 'Streaming' },
+    { title: 'TradingView', url: 'https://www.tradingview.com', category: 'Finance', tag: 'Markets' },
+    { title: 'Yahoo Finance', url: 'https://finance.yahoo.com', category: 'Finance', tag: 'Finance' },
+    { title: 'CoinMarketCap', url: 'https://coinmarketcap.com', category: 'Finance', tag: 'Crypto' },
+    { title: 'Google Maps', url: 'https://maps.google.com', category: 'Utilities', tag: 'Maps' },
+    { title: 'Speedtest', url: 'https://www.speedtest.net', category: 'Utilities', tag: 'Network' },
+    { title: 'Zoom Earth', url: 'https://zoom.earth', category: 'Utilities', tag: 'Weather' },
+    { title: 'Hacker News', url: 'https://news.ycombinator.com', category: 'News', tag: 'Tech' },
+    { title: 'The Verge', url: 'https://www.theverge.com', category: 'News', tag: 'Tech news' },
+    { title: 'Reuters', url: 'https://www.reuters.com', category: 'News', tag: 'World' },
+    { title: 'TechCrunch', url: 'https://techcrunch.com', category: 'News', tag: 'Startups' }
+].map((site) => ({
+    ...site,
+    id: slug(site.title),
+    host: new URL(site.url).hostname.replace(/^www\./, '')
+}));
 
-// State Management
-let currentLocation = { lat: 32.23, lon: -7.93 }; // Default: Ben Guerir coords
-let wallpaperInterval;
-let notificationInterval;
-let hackerNewsStories = [];
-let currentStoryIndex = 0;
-let allNotifications = []; // Store all notification cards
-let visibleStartIndex = 0; // Track which cards are currently visible
-let showSeconds = false; // Track whether to show seconds
-let lastTime = ''; // Track last time to detect changes
-
-// Sites for Start Menu (popular + useful)
-const POPULAR_SITES = [
-    { title: 'Google', url: 'https://www.google.com', icon: 'https://www.google.com/favicon.ico' },
-    { title: 'YouTube', url: 'https://www.youtube.com', icon: 'https://www.youtube.com/s/desktop/1c8e08d0/img/favicon_144x144.png' },
-    { title: 'Twitter', url: 'https://twitter.com', icon: 'https://abs.twimg.com/favicons/twitter.3.ico' },
-    { title: 'Reddit', url: 'https://www.reddit.com', icon: 'https://www.redditstatic.com/desktop2x/img/favicon/favicon-32x32.png' },
-    { title: 'GitHub', url: 'https://github.com', icon: 'https://github.githubassets.com/favicons/favicon.png' },
-    { title: 'Stack Overflow', url: 'https://stackoverflow.com', icon: 'https://cdn.sstatic.net/Sites/stackoverflow/Img/favicon.ico' },
-    { title: 'Hacker News', url: 'https://news.ycombinator.com', icon: 'https://news.ycombinator.com/favicon.ico' },
-    { title: 'Wikipedia', url: 'https://wikipedia.org', icon: 'https://www.wikipedia.org/static/favicon/wikipedia.ico' },
-    { title: 'Product Hunt', url: 'https://www.producthunt.com', icon: 'https://ph-files.imgix.net/production/ph-assets/favicon.png' },
-    { title: 'Zoom Earth', url: 'https://zoom.earth', icon: 'https://zoom.earth/wp-content/uploads/2023/04/cropped-zoom-earth-192x192.png' },
-    { title: 'Gmail', url: 'https://mail.google.com', icon: 'https://ssl.gstatic.com/ui/v1/icons/mail/favicon.ico' },
-    { title: 'Drive', url: 'https://drive.google.com', icon: 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png' },
-    { title: 'LinkedIn', url: 'https://www.linkedin.com', icon: 'https://static.licdn.com/scds/common/u/images/logos/favicons/v1/favicon.ico' },
-    { title: 'Facebook', url: 'https://www.facebook.com', icon: 'https://static.xx.fbcdn.net/rsrc.php/yD/r/d4ZIVX-5C-b.ico' },
-    { title: 'Instagram', url: 'https://www.instagram.com', icon: 'https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png' },
-    { title: 'Netflix', url: 'https://www.netflix.com', icon: 'https://assets.nflxext.com/us/ffe/siteui/common/icons/nficon2016.ico' },
-    { title: 'Amazon', url: 'https://www.amazon.com', icon: 'https://www.amazon.com/favicon.ico' },
-    { title: 'Twitch', url: 'https://www.twitch.tv', icon: 'https://static.twitchcdn.net/assets/favicon-32-e29e246c157142c94346.png' },
-    { title: 'Discord', url: 'https://discord.com', icon: 'https://discord.com/assets/847541504914fd33810e70a0ea73177e.ico' },
-    { title: 'OpenAI', url: 'https://openai.com', icon: 'https://openai.com/favicon.ico' },
-    { title: 'BBC', url: 'https://www.bbc.com', icon: 'https://static.files.bbci.co.uk/core/website/assets/static/favicon/favicon-32x32.png' },
-    { title: 'NYTimes', url: 'https://www.nytimes.com', icon: 'https://www.nytimes.com/vi-assets/static-assets/favicon.ico' },
-    { title: 'The Verge', url: 'https://www.theverge.com', icon: 'https://www.theverge.com/favicon.ico' },
-    { title: 'Bloomberg', url: 'https://www.bloomberg.com', icon: 'https://www.bloomberg.com/favicon.ico' },
-    { title: 'Dev.to', url: 'https://dev.to', icon: 'https://practicaldev-herokuapp-com.freetls.fastly.net/assets/devlogo-pwa-192.png' },
-
-    // Additions
-    { title: 'DuckDuckGo', url: 'https://duckduckgo.com', icon: 'https://duckduckgo.com/favicon.ico' },
-    { title: 'MDN Web Docs', url: 'https://developer.mozilla.org', icon: 'https://developer.mozilla.org/favicon-48x48.cbbd161b.png' },
-    { title: 'GitLab', url: 'https://gitlab.com', icon: 'https://about.gitlab.com/ico/favicon.ico' },
-    { title: 'CodePen', url: 'https://codepen.io', icon: 'https://codepen.io/favicon.ico' },
-    { title: 'JSFiddle', url: 'https://jsfiddle.net', icon: 'https://jsfiddle.net/favicon.ico' },
-    { title: 'npm', url: 'https://www.npmjs.com', icon: 'https://www.npmjs.com/favicon.ico' },
-    { title: 'Node.js', url: 'https://nodejs.org', icon: 'https://nodejs.org/static/images/favicons/favicon-32x32.png' },
-    { title: 'React', url: 'https://react.dev', icon: 'https://react.dev/favicon.ico' },
-    { title: 'Vue', url: 'https://vuejs.org', icon: 'https://vuejs.org/images/icons/favicon-32x32.png' },
-    { title: 'Angular', url: 'https://angular.io', icon: 'https://angular.io/assets/images/favicons/favicon-32x32.png' },
-    { title: 'TypeScript', url: 'https://www.typescriptlang.org', icon: 'https://www.typescriptlang.org/favicon-32x32.png' },
-    { title: 'Tailwind CSS', url: 'https://tailwindcss.com', icon: 'https://tailwindcss.com/favicons/favicon-32x32.png' },
-    { title: 'Vite', url: 'https://vitejs.dev', icon: 'https://vitejs.dev/logo.svg' },
-    { title: 'Webpack', url: 'https://webpack.js.org', icon: 'https://webpack.js.org/favicon.ico' },
-
-    { title: 'freeCodeCamp', url: 'https://www.freecodecamp.org', icon: 'https://www.freecodecamp.org/favicon-32x32.png' },
-    { title: 'Coursera', url: 'https://www.coursera.org', icon: 'https://www.coursera.org/favicon.ico' },
-    { title: 'Khan Academy', url: 'https://www.khanacademy.org', icon: 'https://www.khanacademy.org/favicon.ico' },
-    { title: 'Udemy', url: 'https://www.udemy.com', icon: 'https://www.udemy.com/staticx/udemy/images/v7/favicon-32x32.png' },
-
-    { title: 'Slack', url: 'https://slack.com', icon: 'https://a.slack-edge.com/80588/marketing/img/meta/favicon-32.png' },
-    { title: 'Notion', url: 'https://www.notion.so', icon: 'https://www.notion.so/images/favicon.ico' },
-    { title: 'Trello', url: 'https://trello.com', icon: 'https://trello.com/favicon.ico' },
-    { title: 'Asana', url: 'https://asana.com', icon: 'https://asana.com/favicon-32x32.png' },
-    { title: 'Todoist', url: 'https://todoist.com', icon: 'https://todoist.com/static/favicon/favicon-32x32.png' },
-
-    { title: 'Google Maps', url: 'https://maps.google.com' },
-    { title: 'Google Calendar', url: 'https://calendar.google.com', icon: 'https://calendar.google.com/googlecalendar/images/favicons_2020q4/calendar_31_32.png' },
-    { title: 'Google Photos', url: 'https://photos.google.com' },
-
-    { title: 'Spotify', url: 'https://open.spotify.com', icon: 'https://open.spotify.com/favicon.ico' },
-    { title: 'Apple', url: 'https://www.apple.com', icon: 'https://www.apple.com/favicon.ico' },
-    { title: 'Microsoft', url: 'https://www.microsoft.com', icon: 'https://www.microsoft.com/favicon.ico' },
-    { title: 'Outlook', url: 'https://outlook.office.com', icon: 'https://outlook.office.com/favicon.ico' },
-    { title: 'OneDrive', url: 'https://onedrive.live.com', icon: 'https://onedrive.live.com/favicon.ico' },
-    { title: 'Office', url: 'https://www.office.com', icon: 'https://www.office.com/favicon.ico' },
-
-    { title: 'AWS Console', url: 'https://console.aws.amazon.com', icon: 'https://a0.awsstatic.com/libra-css/images/site/fav/favicon.ico' },
-    { title: 'Azure Portal', url: 'https://portal.azure.com', icon: 'https://portal.azure.com/favicon.ico' },
-    { title: 'Google Cloud Console', url: 'https://console.cloud.google.com', icon: 'https://cloud.google.com/_static/cloud/images/favicons/onecloud/favicon.ico' },
-
-    { title: 'Ars Technica', url: 'https://arstechnica.com', icon: 'https://cdn.arstechnica.net/wp-content/themes/ars/assets/img/favicons/favicon-32x32.png' },
-    { title: 'TechCrunch', url: 'https://techcrunch.com', icon: 'https://techcrunch.com/favicon.ico' },
-    { title: 'Wired', url: 'https://www.wired.com', icon: 'https://www.wired.com/favicon.ico' },
-    { title: 'The Guardian', url: 'https://www.theguardian.com', icon: 'https://www.theguardian.com/favicon.ico' },
-    { title: 'Reuters', url: 'https://www.reuters.com', icon: 'https://www.reuters.com/pf/resources/images/reuters/favicon-32x32.png' },
-    { title: 'AP News', url: 'https://apnews.com', icon: 'https://apnews.com/favicon.ico' },
-
-    { title: 'Yahoo Finance', url: 'https://finance.yahoo.com', icon: 'https://finance.yahoo.com/favicon.ico' },
-    { title: 'CoinMarketCap', url: 'https://coinmarketcap.com', icon: 'https://s2.coinmarketcap.com/static/cloud/img/coinmarketcap_32x32.png' },
-    { title: 'TradingView', url: 'https://www.tradingview.com', icon: 'https://www.tradingview.com/favicon.ico' },
-
-    { title: 'Medium', url: 'https://medium.com', icon: 'https://medium.com/favicon.ico' },
-    { title: 'Lobsters', url: 'https://lobste.rs', icon: 'https://lobste.rs/favicon.ico' },
-    { title: 'Stack Exchange', url: 'https://stackexchange.com', icon: 'https://stackexchange.com/favicon.ico' },
-
-    { title: 'Speedtest', url: 'https://www.speedtest.net', icon: 'https://www.speedtest.net/favicon.ico' },
-    { title: 'WhatsApp Web', url: 'https://web.whatsapp.com', icon: 'https://web.whatsapp.com/img/favicon/1x/favicon.png' },
-    { title: 'Telegram Web', url: 'https://web.telegram.org', icon: 'https://web.telegram.org/favicon.ico' },
-
-    { title: 'eBay', url: 'https://www.ebay.com', icon: 'https://www.ebay.com/favicon.ico' },
-    { title: 'AliExpress', url: 'https://www.aliexpress.com', icon: 'https://www.aliexpress.com/favicon.ico' },
-
-    { title: 'Pinterest', url: 'https://www.pinterest.com', icon: 'https://www.pinterest.com/favicon.ico' },
-    { title: 'Dribbble', url: 'https://dribbble.com', icon: 'https://dribbble.com/favicon.ico' },
-    { title: 'Behance', url: 'https://www.behance.net', icon: 'https://www.behance.net/favicon.ico' },
-
-    { title: 'IMDb', url: 'https://www.imdb.com', icon: 'https://m.media-amazon.com/images/G/01/imdb/images/mobile/favicon_32-2161679182._CB482747980_.png' },
-    { title: 'Windy', url: 'https://www.windy.com', icon: 'https://www.windy.com/img/windy-32.png' },
-    { title: 'OpenStreetMap', url: 'https://www.openstreetmap.org', icon: 'https://www.openstreetmap.org/favicon.ico' }
+const quickActionTitles = ['ChatGPT', 'GitHub', 'Figma', 'YouTube'];
+const designFeed = [
+    { title: 'Figma Community: dashboard templates and UI kits', url: 'https://www.figma.com/templates/dashboard-designs/', source: 'Design', meta: 'Figma Community' },
+    { title: 'Dribbble: command palette and launcher inspiration', url: 'https://dribbble.com/search/command', source: 'Design', meta: 'Dribbble' },
+    { title: 'Behance: dashboard and product interface inspiration', url: 'https://www.behance.net/search/projects/dashboard%20ui', source: 'Design', meta: 'Behance' },
+    { title: 'Mobbin: real app UI patterns', url: 'https://mobbin.com/browse/web/apps', source: 'Design', meta: 'Mobbin' }
 ];
+let activeView = 'dashboard';
+let activeCategory = 'All';
+let activeNewsSource = 'All';
+let showSeconds = false;
+let allNews = [];
+let favorites = loadJson('gateway:favorites', ['chatgpt', 'github', 'figma', 'notion', 'youtube', 'hacker-news']);
+let recents = loadJson('gateway:recents', []);
 
-// --- Utility Functions ---
-function showToast(message, type = 'info', duration = TOAST_DURATION) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    const iconMap = {
-        success: 'fa-check-circle',
-        warning: 'fa-exclamation-triangle',
-        error: 'fa-times-circle',
-        info: 'fa-info-circle'
-    };
-    
-    toast.innerHTML = `
-        <i class="fas ${iconMap[type]} icon"></i>
-        <span class="message">${message}</span>
-        <button class="close" onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-    
-    toastContainer.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.style.animation = 'slideOut 0.3s ease forwards';
-            setTimeout(() => toast.remove(), 300);
-        }
-    }, duration);
+const elements = {
+    greeting: document.getElementById('greeting'),
+    dateLabel: document.getElementById('dateLabel'),
+    systemStatus: document.getElementById('systemStatus'),
+    time: document.getElementById('time'),
+    timeButton: document.getElementById('timeButton'),
+    weather: document.getElementById('weather'),
+    quickActions: document.getElementById('quickActions'),
+    favoriteGrid: document.getElementById('favoriteGrid'),
+    recentList: document.getElementById('recentList'),
+    siteSearch: document.getElementById('siteSearch'),
+    categoryTabs: document.getElementById('categoryTabs'),
+    siteGrid: document.getElementById('siteGrid'),
+    newsTabs: document.getElementById('newsTabs'),
+    newsList: document.getElementById('newsList'),
+    refreshNews: document.getElementById('refreshNews'),
+    commandPalette: document.getElementById('commandPalette'),
+    commandInput: document.getElementById('commandInput'),
+    commandResults: document.getElementById('commandResults'),
+    openCommand: document.getElementById('openCommand'),
+    themeToggle: document.getElementById('themeToggle'),
+    toastContainer: document.getElementById('toastContainer')
+};
+
+function slug(value) {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-function setSystemState(message) {
-    if (systemStateElement) {
-        systemStateElement.textContent = message;
+function loadJson(key, fallback) {
+    try {
+        return JSON.parse(localStorage.getItem(key)) || fallback;
+    } catch {
+        return fallback;
     }
 }
 
-function createErrorHTML(title, message) {
-    return `
-        <div class="notification-card visible">
-            <div class="header">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>Error</span>
-            </div>
-            <p><strong>Failed to load ${title}:</strong> ${message}</p>
+function saveJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    }[char]));
+}
+
+function getIconUrl(site) {
+    return `https://www.google.com/s2/favicons?domain=${site.host}&sz=64`;
+}
+
+function openSite(site) {
+    recents = [site.id, ...recents.filter((id) => id !== site.id)].slice(0, 6);
+    saveJson('gateway:recents', recents);
+    renderRecents();
+    window.open(site.url, '_blank', 'noopener');
+}
+
+function toggleFavorite(siteId) {
+    favorites = favorites.includes(siteId)
+        ? favorites.filter((id) => id !== siteId)
+        : [siteId, ...favorites].slice(0, 12);
+    saveJson('gateway:favorites', favorites);
+    renderSites();
+    renderFavorites();
+}
+
+function makeSiteCard(site, compact = false) {
+    const card = document.createElement('article');
+    card.className = 'site-card';
+    card.innerHTML = `
+        <div class="site-top">
+            <button class="site-icon" type="button" aria-label="Open ${escapeHtml(site.title)}">
+                <img src="${getIconUrl(site)}" alt="" loading="lazy">
+            </button>
+            <button class="pin-btn ${favorites.includes(site.id) ? 'is-pinned' : ''}" type="button" aria-label="Pin ${escapeHtml(site.title)}">
+                <i class="fas fa-star"></i>
+            </button>
+        </div>
+        <div>
+            <strong>${escapeHtml(site.title)}</strong>
+            <span>${escapeHtml(compact ? site.host : `${site.category} - ${site.tag}`)}</span>
         </div>
     `;
+    card.querySelector('.site-icon').addEventListener('click', () => openSite(site));
+    card.querySelector('.pin-btn').addEventListener('click', () => toggleFavorite(site.id));
+    card.addEventListener('dblclick', () => openSite(site));
+    return card;
 }
 
-// --- Core Functions ---
-
-// Time and Date
-function updateTimeDate() {
-    const now = new Date();
-    const timeOptions = showSeconds 
-        ? { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
-        : { hour: '2-digit', minute: '2-digit', hour12: false };
-    
-    const newTime = now.toLocaleTimeString('en-US', timeOptions);
-    
-    // Check if this is the first load
-    if (lastTime === '') {
-        // First load - just set the time without animation
-        setTimeWithoutAnimation(newTime);
-    } else if (newTime !== lastTime) {
-        // Time changed - animate the difference
-        animateTimeChange(lastTime, newTime);
-    }
-    
-    lastTime = newTime;
-    
-    dateElement.textContent = now.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        month: 'long', 
-        day: 'numeric' 
-    });
-
-    // Mirror simplified time to menu bar clock
-    // menuClock removed
+function renderQuickActions() {
+    elements.quickActions.innerHTML = '';
+    quickActionTitles
+        .map((title) => sites.find((site) => site.title === title))
+        .filter(Boolean)
+        .forEach((site) => {
+            const link = document.createElement('a');
+            link.className = 'quick-action';
+            link.href = site.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.innerHTML = `
+                <span class="site-icon"><img src="${getIconUrl(site)}" alt=""></span>
+                <span><strong>${escapeHtml(site.title)}</strong><span>${escapeHtml(site.tag)}</span></span>
+                <i class="fas fa-arrow-up-right-from-square"></i>
+            `;
+            link.addEventListener('click', () => {
+                recents = [site.id, ...recents.filter((id) => id !== site.id)].slice(0, 6);
+                saveJson('gateway:recents', recents);
+            });
+            elements.quickActions.appendChild(link);
+        });
 }
 
-function setTimeWithoutAnimation(timeString) {
-    timeElement.innerHTML = '';
-    for (let i = 0; i < timeString.length; i++) {
-        const char = timeString[i];
-        if (char === ':') {
-            const separator = document.createElement('span');
-            separator.className = 'time-separator';
-            separator.textContent = ':';
-            timeElement.appendChild(separator);
-        } else {
-            const digitContainer = document.createElement('span');
-            digitContainer.className = 'time-digit';
-            digitContainer.textContent = char;
-            timeElement.appendChild(digitContainer);
-        }
-    }
+function renderFavorites() {
+    elements.favoriteGrid.innerHTML = '';
+    const pinned = favorites.map((id) => sites.find((site) => site.id === id)).filter(Boolean).slice(0, 6);
+    const list = pinned.length ? pinned : sites.slice(0, 6);
+    list.forEach((site) => elements.favoriteGrid.appendChild(makeSiteCard(site, true)));
 }
 
-function animateTimeChange(oldTime, newTime) {
-    const digitContainers = timeElement.querySelectorAll('.time-digit');
-    let containerIndex = 0;
-    
-    for (let i = 0; i < newTime.length; i++) {
-        const char = newTime[i];
-        
-        if (char !== ':') {
-            const oldChar = oldTime[i] || '';
-            
-            if (char !== oldChar && digitContainers[containerIndex]) {
-                // Create old digit element for slide-down animation
-                const oldDigit = document.createElement('span');
-                oldDigit.className = 'digit-old';
-                oldDigit.textContent = oldChar;
-                
-                // Create new digit element for slide-up animation
-                const newDigit = document.createElement('span');
-                newDigit.className = 'digit-new';
-                newDigit.textContent = char;
-                
-                // Clear container and add both digits
-                const container = digitContainers[containerIndex];
-                container.innerHTML = '';
-                container.appendChild(oldDigit);
-                container.appendChild(newDigit);
-                
-                // Clean up after animation
-                setTimeout(() => {
-                    container.innerHTML = char;
-                }, 600);
-            }
-            containerIndex++;
-        }
-    }
-}
-
-// Wallpaper
-async function updateWallpaper() {
-    // The wallpaper is now a CSS gradient, so this function is not needed.
-    // We can re-enable it if we want to go back to image backgrounds.
-}
-
-// Weather
-async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon) {
-    if (WEATHER_API_KEY === 'YOUR_API_KEY') {
-        weatherElement.innerHTML = `<i class="fas fa-cog"></i> API Key Needed`;
+function renderRecents() {
+    elements.recentList.innerHTML = '';
+    const recentSites = recents.map((id) => sites.find((site) => site.id === id)).filter(Boolean);
+    if (!recentSites.length) {
+        elements.recentList.innerHTML = '<p class="empty">Open a few sites and they will appear here.</p>';
         return;
     }
-    
-    const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`;
-    
-    try {
-        const response = await fetch(weatherApiUrl);
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        const data = await response.json();
-        
-        const iconCode = data.weather[0].icon;
-        const description = data.weather[0].description;
-        const temp = Math.round(data.main.temp);
-        const location = data.name;
-        
-        const weatherIcons = {
-            '01d': 'fa-sun', '01n': 'fa-moon',
-            '02d': 'fa-cloud-sun', '02n': 'fa-cloud-moon',
-            '03d': 'fa-cloud', '03n': 'fa-cloud',
-            '04d': 'fa-cloud', '04n': 'fa-cloud',
-            '09d': 'fa-cloud-showers-heavy', '09n': 'fa-cloud-showers-heavy',
-            '10d': 'fa-cloud-sun-rain', '10n': 'fa-cloud-moon-rain',
-            '11d': 'fa-bolt', '11n': 'fa-bolt',
-            '13d': 'fa-snowflake', '13n': 'fa-snowflake',
-            '50d': 'fa-smog', '50n': 'fa-smog'
-        };
-        
-        weatherElement.innerHTML = `
-            <i class="fas ${weatherIcons[iconCode] || 'fa-question-circle'}"></i>
-            <span>${temp}°C in ${location}</span>
+    recentSites.forEach((site) => {
+        const item = document.createElement('button');
+        item.className = 'recent-item';
+        item.type = 'button';
+        item.innerHTML = `
+            <span class="site-icon"><img src="${getIconUrl(site)}" alt=""></span>
+            <span><strong>${escapeHtml(site.title)}</strong><span>${escapeHtml(site.host)}</span></span>
+            <i class="fas fa-arrow-right"></i>
         `;
-        setSystemState('Synced');
-        
-        currentLocation = { lat, lon };
-        
-    } catch (error) {
-        console.error('Error fetching weather:', error);
-        weatherElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Weather unavailable`;
-        setSystemState('Limited');
-        showToast(`Weather error: ${error.message}`, 'error');
-    }
-}
-
-// Hacker News
-async function fetchHackerNews() {
-    const skeleton = document.getElementById('hn-skeleton');
-    const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timeout')), ms));
-    try {
-        const idsResponse = await Promise.race([
-            fetch('https://hacker-news.firebaseio.com/v0/topstories.json'),
-            timeout(8000)
-        ]);
-        if (!idsResponse.ok) throw new Error(`HN API Error: ${idsResponse.status}`);
-        const ids = await idsResponse.json();
-        const topIds = ids.slice(0, HACKERNEWS_STORIES_COUNT * 3); // fetch extra for filtering
-        const storyPromises = topIds.map(id => Promise.race([
-            fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(res => res.json()),
-            timeout(6000)
-        ]).catch(() => null));
-        const stories = await Promise.all(storyPromises);
-        hackerNewsStories = stories.filter(story => story && story.title && story.url).slice(0, HACKERNEWS_STORIES_COUNT);
-
-        // Fallback curated sample if API returns nothing
-        if (hackerNewsStories.length === 0) {
-            hackerNewsStories = [
-                { title: 'Hacker News temporarily unavailable', url: 'https://news.ycombinator.com', score: 0, descendants: 0 },
-                { title: 'Retry later for fresh stories', url: 'https://news.ycombinator.com/newest', score: 0, descendants: 0 }
-            ];
-        }
-
-        if (skeleton) skeleton.remove();
-        currentStoryIndex = 0;
-        cycleNotification();
-        if (notificationInterval) clearInterval(notificationInterval);
-        notificationInterval = setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
-    } catch (error) {
-        console.error('Error fetching Hacker News:', error);
-        if (skeleton) skeleton.remove();
-        notificationsContainer.innerHTML = createErrorHTML('Hacker News', error.message || 'Unknown error');
-        showToast('Hacker News feed unavailable', 'warning');
-    }
-}
-
-function cycleNotification() {
-    if (hackerNewsStories.length === 0) return;
-
-    const story = hackerNewsStories[currentStoryIndex];
-    
-    const notificationCard = document.createElement('div');
-    notificationCard.className = 'notification-card';
-    notificationCard.innerHTML = `
-        <div class="header">
-            <i class="fab fa-hacker-news"></i>
-            <span>Hacker News</span>
-        </div>
-        <a href="${story.url}" target="_blank" rel="noopener noreferrer">${story.title}</a>
-        <p>Score: ${story.score || 0} | Comments: ${story.descendants || 0}</p>
-    `;
-    
-    // Add to beginning of allNotifications array
-    allNotifications.unshift(notificationCard);
-    
-    // Keep maximum of 3 cards - remove old ones (reduced for very compact view)
-    if (allNotifications.length > 3) {
-        allNotifications.splice(3);
-    }
-    
-    // Reset visibleStartIndex to show the newest card
-    visibleStartIndex = 0;
-    
-    // Update the display
-    updateNotificationDisplay();
-
-    currentStoryIndex = (currentStoryIndex + 1) % hackerNewsStories.length;
-}
-
-function updateNotificationDisplay() {
-    // Clear container
-    notificationsContainer.innerHTML = '';
-    
-    // Show up to 3 cards starting from visibleStartIndex (reduced for very compact view)
-    const maxVisible = 3;
-    for (let i = 0; i < Math.min(maxVisible, allNotifications.length); i++) {
-        const cardIndex = (visibleStartIndex + i) % allNotifications.length;
-        const card = allNotifications[cardIndex].cloneNode(true);
-        
-        // Apply stacking styles
-        card.style.position = 'absolute';
-        card.style.top = `${i * 18}px`;
-        card.style.left = '0';
-        card.style.right = '0';
-        card.style.zIndex = maxVisible - i;
-        card.style.width = '100%';
-        
-        // Apply visual effects based on position
-        if (i === 0) {
-            card.classList.add('visible');
-            card.style.transform = 'translateY(0px) scale(1)';
-            card.style.opacity = '1';
-            card.style.filter = 'blur(0px)';
-        } else if (i === 1) {
-            card.classList.add('old');
-            card.style.transform = 'translateY(18px) scale(0.97)';
-            card.style.opacity = '0.6';
-            card.style.filter = 'blur(1px)';
-        } else {
-            card.classList.add('older');
-            card.style.transform = 'translateY(36px) scale(0.94)';
-            card.style.opacity = '0.4';
-            card.style.filter = 'blur(2px)';
-        }
-        
-        notificationsContainer.appendChild(card);
-    }
-}
-
-function scrollNotifications(direction) {
-    if (allNotifications.length <= 1) return;
-    
-    if (direction > 0) {
-        // Scroll down (show newer cards)
-        visibleStartIndex = (visibleStartIndex - 1 + allNotifications.length) % allNotifications.length;
-    } else {
-        // Scroll up (show older cards)
-        visibleStartIndex = (visibleStartIndex + 1) % allNotifications.length;
-    }
-    
-    updateNotificationDisplay();
-}
-
-
-// Geolocation
-function getCurrentLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                fetchWeather(position.coords.latitude, position.coords.longitude);
-            },
-            (error) => {
-                console.warn("Geolocation failed:", error.message);
-                fetchWeather(); // Use default location
-            }
-        );
-    } else {
-        console.warn("Geolocation not supported");
-        fetchWeather(); // Use default location
-    }
-}
-
-// Time-based theme update
-function updateTheme() {
-  const hour = new Date().getHours();
-  let c1, c2, c3, text;
-
-  if (hour >= 6 && hour < 12) {
-    // Morning
-    c1 = '#a1c4fd'; c2 = '#c2e9fb'; c3 = '#ffffff';
-    text = '#000000';
-  } else if (hour >= 12 && hour < 18) {
-    // Day
-    c1 = '#fde68a'; c2 = '#f59e0b'; c3 = '#f97316';
-    text = '#000000';
-  } else if (hour >= 18 && hour < 20) {
-    // Evening
-    c1 = '#833ab4'; c2 = '#fd1d1d'; c3 = '#fcb045';
-    text = '#ffffff';
-  } else {
-    // Night
-    c1 = '#0f2027'; c2 = '#203a43'; c3 = '#2c5364';
-    text = '#ffffff';
-  }
-  const root = document.documentElement.style;
-  root.setProperty('--color-1', c1);
-  root.setProperty('--color-2', c2);
-  root.setProperty('--color-3', c3);
-  root.setProperty('--text-color', text);
-}
-
-// Initialization
-function init() {
-    // Initial calls
-    updateTimeDate();
-    getCurrentLocation();
-    fetchHackerNews();
-    updateTheme();
-
-    // Set intervals
-    setInterval(updateTimeDate, 1000);
-    setInterval(updateTheme, 60 * 1000);
-    
-    // Add click event to time to toggle seconds display
-    timeElement.addEventListener('click', () => {
-        showSeconds = !showSeconds;
-        lastTime = ''; // Force animation on next update
-        updateTimeDate(); // Update immediately
+        item.addEventListener('click', () => openSite(site));
+        elements.recentList.appendChild(item);
     });
-    
-    // Add scroll event listener for card navigation
-    notificationsContainer.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const direction = e.deltaY > 0 ? 1 : -1;
-        scrollNotifications(direction);
-    }, { passive: false });
-    
-    // Add touch support for mobile
-    let startY = 0;
-    notificationsContainer.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    });
-    
-    notificationsContainer.addEventListener('touchend', (e) => {
-        const endY = e.changedTouches[0].clientY;
-        const diff = startY - endY;
-        
-        if (Math.abs(diff) > 50) { // Minimum swipe distance
-            const direction = diff > 0 ? 1 : -1;
-            scrollNotifications(direction);
-        }
-    });
-    
-    // Welcome message
-    setTimeout(() => {
-        showToast('Welcome to your personal Gateway.', 'info', 6000);
-    }, 1000);
+}
 
-    // Taskbar handlers
-    const btnTheme = document.getElementById('btnTheme');
-    const btnStart = document.getElementById('btnStart');
-    const btnRefresh = document.getElementById('btnRefresh');
-    const openStartInline = document.getElementById('openStartInline');
-    const startMenu = document.getElementById('startMenu');
-    const overlay = document.getElementById('overlay');
-    const siteGrid = document.getElementById('siteGrid');
-    const siteSearch = document.getElementById('siteSearch');
-    const prevPageBtn = document.getElementById('prevPage');
-    const nextPageBtn = document.getElementById('nextPage');
-    const pageDots = document.getElementById('pageDots');
-
-    const toggleTheme = () => document.body.classList.toggle('alt-theme');
-    const doRefresh = () => location.reload();
-    window.toggleTheme = toggleTheme;
-    window.doRefresh = doRefresh;
-
-    const openStart = () => {
-        startMenu.hidden = false; overlay.hidden = false;
-        requestAnimationFrame(() => { startMenu.classList.add('open'); btnStart.setAttribute('aria-expanded', 'true'); siteSearch?.focus(); });
-    };
-    const closeStart = () => {
-        startMenu.classList.remove('open'); btnStart.setAttribute('aria-expanded', 'false');
-        setTimeout(() => { startMenu.hidden = true; overlay.hidden = true; }, 200);
-    };
-    const toggleStart = () => startMenu.hidden ? openStart() : closeStart();
-    window.toggleStartMenu = toggleStart;
-    if (openStartInline) openStartInline.addEventListener('click', openStart);
-    if (startMenu && overlay) {
-        overlay.addEventListener('click', closeStart);
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !startMenu.hidden) closeStart(); });
-    }
-
-    // Populate sites
-    if (siteGrid) {
-        const makeCard = (site) => {
-            const a = document.createElement('a');
-            a.className = 'site-card';
-            a.href = site.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-                        const iconUrl = site.icon || `https://www.google.com/s2/favicons?domain=${new URL(site.url).hostname}&sz=64`;
-                        a.innerHTML = `
-                            <span class="site-icon"><img src="${iconUrl}" alt="${site.title}" onerror="this.src='https://www.google.com/s2/favicons?domain=${new URL(site.url).hostname}&sz=64'"/></span>
-                            <span class="site-title">${site.title}</span>
-                        `;
-            return a;
-        };
-        let filtered = [...POPULAR_SITES];
-        let currentPage = 0;
-
-        const getPerPage = () => {
-            // Mirror CSS grid: 4 cols desktop, 3 on small
-            const cols = window.matchMedia('(max-width: 520px)').matches ? 3 : 4;
-            const rows = 3; // fixed rows, no scroll
-            return cols * rows; // 12 desktop, 9 mobile
-        };
-
-        const updateDots = (pages) => {
-            pageDots.innerHTML = '';
-            for (let i = 0; i < pages; i++) {
-                const dot = document.createElement('span');
-                dot.className = 'page-dot' + (i === currentPage ? ' active' : '');
-                dot.setAttribute('role', 'tab');
-                dot.setAttribute('aria-selected', i === currentPage ? 'true' : 'false');
-                dot.addEventListener('click', () => { currentPage = i; renderPage(); });
-                pageDots.appendChild(dot);
-            }
-        };
-
-        const renderPage = () => {
-            const perPage = getPerPage();
-            const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-            currentPage = Math.max(0, Math.min(currentPage, totalPages - 1));
-            const start = currentPage * perPage;
-            const slice = filtered.slice(start, start + perPage);
-            siteGrid.innerHTML = '';
-            slice.forEach(s => siteGrid.appendChild(makeCard(s)));
-            updateDots(totalPages);
-            // Update nav state
-            if (prevPageBtn) prevPageBtn.disabled = currentPage === 0;
-            if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages - 1;
-        };
-
-        // Initial render
-        renderPage();
-
-        // Search
-        if (siteSearch) {
-            siteSearch.addEventListener('input', () => {
-                const q = siteSearch.value.trim().toLowerCase();
-                filtered = !q ? [...POPULAR_SITES] : POPULAR_SITES.filter(s => s.title.toLowerCase().includes(q) || s.url.toLowerCase().includes(q));
-                currentPage = 0;
-                renderPage();
-            });
-        }
-
-        // Nav buttons
-        if (prevPageBtn) prevPageBtn.addEventListener('click', () => { currentPage = Math.max(0, currentPage - 1); renderPage(); });
-        if (nextPageBtn) nextPageBtn.addEventListener('click', () => { currentPage = currentPage + 1; renderPage(); });
-
-        // Recompute on resize for responsive cols
-        window.addEventListener('resize', () => { renderPage(); });
-
-    }
-
-    // Make weather widget open Zoom Earth on click / keyboard
-    if (weatherElement) {
-        weatherElement.setAttribute('role', 'button');
-        weatherElement.setAttribute('tabindex', '0');
-        weatherElement.setAttribute('title', 'Open live earth view (Zoom Earth)');
-        const openZoomEarth = () => window.open('https://zoom.earth', '_blank', 'noopener');
-        weatherElement.addEventListener('click', openZoomEarth);
-        weatherElement.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openZoomEarth(); }
+function renderCategoryTabs() {
+    elements.categoryTabs.innerHTML = '';
+    CATEGORIES.forEach((category) => {
+        const button = document.createElement('button');
+        button.className = `tab ${category === activeCategory ? 'is-active' : ''}`;
+        button.type = 'button';
+        button.textContent = category;
+        button.addEventListener('click', () => {
+            activeCategory = category;
+            renderCategoryTabs();
+            renderSites();
         });
+        elements.categoryTabs.appendChild(button);
+    });
+}
+
+function renderSites() {
+    const query = elements.siteSearch.value.trim().toLowerCase();
+    const filtered = sites.filter((site) => {
+        const inCategory = activeCategory === 'All' || site.category === activeCategory;
+        const inQuery = !query || `${site.title} ${site.host} ${site.category} ${site.tag}`.toLowerCase().includes(query);
+        return inCategory && inQuery;
+    });
+    elements.siteGrid.innerHTML = '';
+    filtered.forEach((site) => elements.siteGrid.appendChild(makeSiteCard(site)));
+}
+
+function setView(view) {
+    activeView = view;
+    document.querySelectorAll('[data-panel]').forEach((panel) => {
+        const isNewsDock = panel.classList.contains('news-dock');
+        if (view === 'dashboard') {
+            panel.hidden = panel.classList.contains('launch-screen');
+        } else if (view === 'launch') {
+            panel.hidden = !panel.classList.contains('launch-screen') && !isNewsDock;
+        } else if (view === 'news') {
+            panel.hidden = !isNewsDock;
+        }
+    });
+    document.querySelectorAll('.rail-btn[data-view]').forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.view === view);
+    });
+}
+
+function updateTime() {
+    const now = new Date();
+    const hour = now.getHours();
+    elements.greeting.textContent = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    elements.time.textContent = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: showSeconds ? '2-digit' : undefined,
+        hour12: false
+    });
+    elements.dateLabel.textContent = now.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+async function fetchWeather(lat = DEFAULT_LOCATION.lat, lon = DEFAULT_LOCATION.lon) {
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
+        if (!response.ok) throw new Error(`Weather ${response.status}`);
+        const data = await response.json();
+        const temp = Math.round(data.main.temp);
+        const description = data.weather?.[0]?.description || 'current weather';
+        elements.weather.innerHTML = `<i class="fas fa-cloud-sun"></i><span>${temp}C, ${escapeHtml(description)} in ${escapeHtml(data.name)}</span>`;
+        elements.systemStatus.textContent = 'Synced';
+    } catch (error) {
+        elements.weather.innerHTML = '<i class="fas fa-triangle-exclamation"></i><span>Weather unavailable</span>';
+        elements.systemStatus.textContent = 'Limited';
     }
 }
 
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    // if (wallpaperInterval) clearInterval(wallpaperInterval);
-    if (notificationInterval) clearInterval(notificationInterval);
-});
+function requestWeather() {
+    if (!navigator.geolocation) {
+        fetchWeather();
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        (position) => fetchWeather(position.coords.latitude, position.coords.longitude),
+        () => fetchWeather(),
+        { timeout: 3500 }
+    );
+}
 
-// Start the application
+async function fetchNews() {
+    elements.newsList.innerHTML = skeletonNews();
+    const requests = [
+        fetch('https://hn.algolia.com/api/v1/search_by_date?tags=front_page').then((res) => res.json()).then((data) =>
+            data.hits.slice(0, 12).map((item) => ({
+                title: item.title,
+                url: item.url || `https://news.ycombinator.com/item?id=${item.objectID}`,
+                source: 'Tech',
+                meta: `HN - ${item.points || 0} points`
+            }))
+        ),
+        fetch('https://dev.to/api/articles?top=7&per_page=12').then((res) => res.json()).then((data) =>
+            data.map((item) => ({
+                title: item.title,
+                url: item.url,
+                source: 'Dev',
+                meta: `DEV - ${item.readable_publish_date || ''}`
+            }))
+        ),
+        fetch('https://api.spaceflightnewsapi.net/v4/articles/?limit=10').then((res) => res.json()).then((data) =>
+            data.results.map((item) => ({
+                title: item.title,
+                url: item.url,
+                source: 'Science',
+                meta: item.news_site || 'Spaceflight News'
+            }))
+        )
+    ];
+    const settled = await Promise.allSettled(requests);
+    allNews = [...designFeed, ...settled.flatMap((result) => result.status === 'fulfilled' ? result.value : [])];
+    if (!allNews.length) {
+        allNews = [
+            { title: 'Hacker News', url: 'https://news.ycombinator.com', source: 'Tech', meta: 'Open source feed' },
+            { title: 'Designer News', url: 'https://www.designernews.co', source: 'Design', meta: 'Design community' },
+            { title: 'The Verge', url: 'https://www.theverge.com', source: 'Tech', meta: 'Technology news' }
+        ];
+        showToast('Live news is unavailable, showing fallback sources.');
+    }
+    renderNewsTabs();
+    renderNews();
+}
+
+function skeletonNews() {
+    return Array.from({ length: 5 }, () => '<article class="news-item"><span>Loading...</span></article>').join('');
+}
+
+function renderNewsTabs() {
+    elements.newsTabs.innerHTML = '';
+    NEWS_SOURCES.forEach((source) => {
+        const button = document.createElement('button');
+        button.className = `tab ${source === activeNewsSource ? 'is-active' : ''}`;
+        button.type = 'button';
+        button.textContent = source;
+        button.addEventListener('click', () => {
+            activeNewsSource = source;
+            renderNewsTabs();
+            renderNews();
+        });
+        elements.newsTabs.appendChild(button);
+    });
+}
+
+function renderNews() {
+    const visible = allNews.filter((item) => activeNewsSource === 'All' || item.source === activeNewsSource).slice(0, 18);
+    elements.newsList.innerHTML = '';
+    visible.forEach((item) => {
+        const link = document.createElement('a');
+        link.className = 'news-item';
+        link.href = item.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.innerHTML = `
+            <small>${escapeHtml(item.source)}</small>
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.meta)}</span>
+        `;
+        elements.newsList.appendChild(link);
+    });
+}
+
+function openPalette() {
+    elements.commandPalette.hidden = false;
+    elements.commandInput.value = '';
+    renderCommandResults('');
+    requestAnimationFrame(() => elements.commandInput.focus());
+}
+
+function closePalette() {
+    elements.commandPalette.hidden = true;
+}
+
+function renderCommandResults(query) {
+    const q = query.trim().toLowerCase();
+    const siteResults = sites
+        .filter((site) => !q || `${site.title} ${site.host} ${site.category} ${site.tag}`.toLowerCase().includes(q))
+        .slice(0, 8)
+        .map((site) => ({ type: 'site', label: site.title, detail: site.host, site }));
+    const newsResults = allNews
+        .filter((item) => q && item.title.toLowerCase().includes(q))
+        .slice(0, 4)
+        .map((item) => ({ type: 'news', label: item.title, detail: item.meta, item }));
+    const actions = [
+        { type: 'action', label: 'Open launch library', detail: 'View all websites', run: () => setView('launch') },
+        { type: 'action', label: 'Open news radar', detail: 'Scan live feeds', run: () => setView('news') },
+        { type: 'action', label: 'Toggle theme', detail: 'Switch light or dark', run: toggleTheme }
+    ].filter((item) => !q || item.label.toLowerCase().includes(q));
+    const results = [...actions, ...siteResults, ...newsResults].slice(0, 14);
+    elements.commandResults.innerHTML = '';
+    results.forEach((result) => {
+        const button = document.createElement('button');
+        button.className = 'command-item';
+        button.type = 'button';
+        button.innerHTML = `
+            <span class="site-icon"><i class="fas ${result.type === 'site' ? 'fa-globe' : result.type === 'news' ? 'fa-newspaper' : 'fa-bolt'}"></i></span>
+            <span><strong>${escapeHtml(result.label)}</strong><span>${escapeHtml(result.detail)}</span></span>
+            <mark>${escapeHtml(result.type)}</mark>
+        `;
+        button.addEventListener('click', () => {
+            if (result.type === 'site') openSite(result.site);
+            if (result.type === 'news') window.open(result.item.url, '_blank', 'noopener');
+            if (result.type === 'action') result.run();
+            closePalette();
+        });
+        elements.commandResults.appendChild(button);
+    });
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('gateway:theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fas fa-circle-info"></i><span>${escapeHtml(message)}</span><button type="button" aria-label="Dismiss"><i class="fas fa-xmark"></i></button>`;
+    toast.querySelector('button').addEventListener('click', () => toast.remove());
+    elements.toastContainer.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut .24s var(--ease) forwards';
+        setTimeout(() => toast.remove(), 260);
+    }, 4200);
+}
+
+function bindEvents() {
+    document.querySelectorAll('.rail-btn[data-view]').forEach((button) => {
+        button.addEventListener('click', () => setView(button.dataset.view));
+    });
+    document.querySelectorAll('[data-open-view]').forEach((button) => {
+        button.addEventListener('click', () => setView(button.dataset.openView));
+    });
+    elements.siteSearch.addEventListener('input', renderSites);
+    elements.timeButton.addEventListener('click', () => {
+        showSeconds = !showSeconds;
+        updateTime();
+    });
+    elements.weather.addEventListener('click', () => window.open('https://zoom.earth', '_blank', 'noopener'));
+    elements.refreshNews.addEventListener('click', fetchNews);
+    elements.openCommand.addEventListener('click', openPalette);
+    elements.themeToggle.addEventListener('click', toggleTheme);
+    elements.commandInput.addEventListener('input', () => renderCommandResults(elements.commandInput.value));
+    document.querySelectorAll('[data-close-palette]').forEach((target) => target.addEventListener('click', closePalette));
+    document.addEventListener('keydown', (event) => {
+        const isCommand = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+        if (isCommand) {
+            event.preventDefault();
+            openPalette();
+        }
+        if (event.key === 'Escape' && !elements.commandPalette.hidden) closePalette();
+    });
+}
+
+function init() {
+    if (localStorage.getItem('gateway:theme') === 'dark') {
+        document.body.classList.add('dark');
+    }
+    bindEvents();
+    renderQuickActions();
+    renderCategoryTabs();
+    renderSites();
+    renderFavorites();
+    renderRecents();
+    renderNewsTabs();
+    updateTime();
+    setInterval(updateTime, 1000);
+    requestWeather();
+    fetchNews();
+    setView('dashboard');
+}
+
 document.addEventListener('DOMContentLoaded', init);
-

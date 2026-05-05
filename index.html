@@ -6,92 +6,141 @@
     <title>Gateway</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" />
-    <meta name="theme-color" content="#f5f2ea" />
+    <meta name="theme-color" content="#f7f4ed" />
 </head>
 <body>
-    <div class="page-shell" aria-hidden="true">
-        <div class="grid-field"></div>
-        <div class="sun-disc"></div>
+    <div class="ambient" aria-hidden="true">
+        <div class="mesh mesh-a"></div>
+        <div class="mesh mesh-b"></div>
+        <div class="grid-glow"></div>
     </div>
 
-    <main class="container">
-        <section class="workspace" aria-label="Gateway workspace">
-            <div class="status-strip" aria-label="Gateway status">
-                <span class="status-mark"></span>
-                <span>Gateway</span>
-                <span id="systemState">Ready</span>
-            </div>
+    <main class="app-shell">
+        <nav class="side-nav" aria-label="Gateway sections">
+            <a class="brand" href="#" aria-label="Gateway home">
+                <span>G</span>
+            </a>
+            <button class="rail-btn is-active" data-view="dashboard" type="button" aria-label="Dashboard">
+                <i class="fas fa-house"></i>
+            </button>
+            <button class="rail-btn" data-view="launch" type="button" aria-label="Launch">
+                <i class="fas fa-grip"></i>
+            </button>
+            <button class="rail-btn" data-view="news" type="button" aria-label="News">
+                <i class="fas fa-newspaper"></i>
+            </button>
+            <button class="rail-btn" id="themeToggle" type="button" aria-label="Toggle theme">
+                <i class="fas fa-circle-half-stroke"></i>
+            </button>
+        </nav>
 
-            <section id="center-widget" class="time-panel" aria-label="Clock and weather widget">
-                <p class="panel-kicker">Local Station</p>
-                <div class="widget-inner">
-                    <div id="time" aria-live="polite">00:00</div>
-                    <div id="date">Loading...</div>
-                    <button id="weather" class="weather-chip" type="button" aria-live="polite">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span>Loading weather...</span>
-                    </button>
+        <section class="main-stage">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Personal Gateway</p>
+                    <h1 id="greeting">Good day</h1>
                 </div>
+                <button id="openCommand" class="command-trigger" type="button">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <span>Search or launch anything</span>
+                    <kbd>Ctrl K</kbd>
+                </button>
+            </header>
+
+            <section class="hero-grid" data-panel="dashboard">
+                <article class="time-card">
+                    <div class="time-meta">
+                        <span id="dateLabel">Loading date</span>
+                        <span id="systemStatus">Online</span>
+                    </div>
+                    <button id="timeButton" type="button" aria-label="Toggle seconds">
+                        <span id="time">00:00</span>
+                    </button>
+                    <button id="weather" class="weather-card" type="button">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Loading weather</span>
+                    </button>
+                </article>
+
+                <article class="focus-card">
+                    <div>
+                        <p class="eyebrow">Today Flow</p>
+                        <h2>Jump faster. Think less.</h2>
+                        <p>Use the command palette, pin favorites, and scan curated live feeds from one workspace.</p>
+                    </div>
+                    <div class="quick-actions" id="quickActions"></div>
+                </article>
             </section>
 
-            <section class="launch-preview" aria-label="Quick launch preview">
-                <div>
-                    <p class="panel-kicker">Launch Deck</p>
-                    <h1>Start from one clean command surface.</h1>
+            <section class="content-grid" data-panel="dashboard">
+                <article class="panel large-panel">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Pinned</p>
+                            <h2>Favorite Launches</h2>
+                        </div>
+                        <button class="text-btn" data-open-view="launch" type="button">Manage</button>
+                    </div>
+                    <div id="favoriteGrid" class="site-grid compact"></div>
+                </article>
+
+                <article class="panel">
+                    <div class="section-head">
+                        <div>
+                            <p class="eyebrow">Recent</p>
+                            <h2>Last Opened</h2>
+                        </div>
+                    </div>
+                    <div id="recentList" class="recent-list"></div>
+                </article>
+            </section>
+
+            <section class="launch-screen" data-panel="launch" hidden>
+                <div class="section-head page-head">
+                    <div>
+                        <p class="eyebrow">Launch Library</p>
+                        <h2>Websites, tools, and destinations</h2>
+                    </div>
+                    <div class="search-inline">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input id="siteSearch" type="search" placeholder="Filter websites..." aria-label="Filter websites">
+                    </div>
                 </div>
-                <button id="openStartInline" class="primary-action" type="button">
-                    <i class="fas fa-compass" aria-hidden="true"></i>
-                    Open
-                </button>
+                <div id="categoryTabs" class="tabs" role="tablist" aria-label="Website categories"></div>
+                <div id="siteGrid" class="site-grid"></div>
             </section>
         </section>
 
-        <aside id="notifications-container" class="notification-stack" aria-label="Live Hacker News feed">
-            <div class="notification-card" id="hn-skeleton">
-                <div class="notification-skeleton">
-                    <div class="skeleton-bar wide"></div>
-                    <div class="skeleton-bar"></div>
-                    <div class="skeleton-bar short"></div>
+        <aside class="news-dock" data-panel="news">
+            <div class="section-head">
+                <div>
+                    <p class="eyebrow">Live Feed</p>
+                    <h2>News Radar</h2>
                 </div>
+                <button id="refreshNews" class="icon-btn" type="button" aria-label="Refresh news">
+                    <i class="fas fa-rotate"></i>
+                </button>
             </div>
+            <div id="newsTabs" class="tabs slim" role="tablist" aria-label="News filters"></div>
+            <div id="newsList" class="news-list" aria-live="polite"></div>
         </aside>
     </main>
 
-    <div class="taskbar" role="toolbar" aria-label="Gateway controls">
-        <button id="btnTheme" class="task-btn" title="Toggle theme" aria-label="Toggle theme" onclick="window.toggleTheme && window.toggleTheme()">
-            <i class="fas fa-circle-half-stroke" aria-hidden="true"></i>
-        </button>
-        <button id="btnStart" class="task-btn start-btn" title="Open launch deck" aria-haspopup="dialog" aria-expanded="false" aria-controls="startMenu" onclick="window.toggleStartMenu && window.toggleStartMenu()">
-            <i class="fas fa-grip" aria-hidden="true"></i>
-        </button>
-        <button id="btnRefresh" class="task-btn" title="Refresh" aria-label="Refresh" onclick="window.doRefresh && window.doRefresh()">
-            <i class="fas fa-rotate" aria-hidden="true"></i>
-        </button>
-    </div>
-
-    <div id="overlay" class="overlay" hidden></div>
-
-    <section id="startMenu" class="start-menu" role="dialog" aria-modal="true" aria-labelledby="startTitle" hidden>
-        <div class="start-inner">
-            <div class="start-header">
-                <div>
-                    <p class="panel-kicker">Command Center</p>
-                    <h2 id="startTitle">Quick Launch</h2>
-                </div>
-                <div class="start-search">
-                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
-                    <input id="siteSearch" type="search" placeholder="Search sites..." aria-label="Search sites" />
-                </div>
+    <section id="commandPalette" class="palette" role="dialog" aria-modal="true" aria-labelledby="paletteTitle" hidden>
+        <div class="palette-backdrop" data-close-palette></div>
+        <div class="palette-panel">
+            <div class="palette-search">
+                <i class="fas fa-bolt"></i>
+                <input id="commandInput" type="search" placeholder="Search apps, news, actions..." aria-label="Search commands">
+                <button type="button" data-close-palette aria-label="Close command palette">
+                    <i class="fas fa-xmark"></i>
+                </button>
             </div>
-            <div id="siteGrid" class="site-grid" aria-live="polite" aria-label="Sites"></div>
-            <div class="start-footer">
-                <button id="prevPage" class="nav-btn" aria-label="Previous page"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
-                <div id="pageDots" class="page-dots" role="tablist" aria-label="Pages"></div>
-                <button id="nextPage" class="nav-btn" aria-label="Next page"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
-            </div>
+            <h2 id="paletteTitle">Command Palette</h2>
+            <div id="commandResults" class="command-results"></div>
         </div>
     </section>
 

@@ -12,6 +12,7 @@ const weatherElement = document.getElementById('weather');
 const notificationsContainer = document.getElementById('notifications-container');
 const toastContainer = document.getElementById('toastContainer');
 const backgroundImage = document.getElementById('background-image');
+const systemStateElement = document.getElementById('systemState');
 // menuClock removed with top bar
 
 // State Management
@@ -156,6 +157,12 @@ function showToast(message, type = 'info', duration = TOAST_DURATION) {
     }, duration);
 }
 
+function setSystemState(message) {
+    if (systemStateElement) {
+        systemStateElement.textContent = message;
+    }
+}
+
 function createErrorHTML(title, message) {
     return `
         <div class="notification-card visible">
@@ -296,12 +303,14 @@ async function fetchWeather(lat = currentLocation.lat, lon = currentLocation.lon
             <i class="fas ${weatherIcons[iconCode] || 'fa-question-circle'}"></i>
             <span>${temp}°C in ${location}</span>
         `;
+        setSystemState('Synced');
         
         currentLocation = { lat, lon };
         
     } catch (error) {
         console.error('Error fetching weather:', error);
         weatherElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Weather unavailable`;
+        setSystemState('Limited');
         showToast(`Weather error: ${error.message}`, 'error');
     }
 }
@@ -391,7 +400,7 @@ function updateNotificationDisplay() {
         
         // Apply stacking styles
         card.style.position = 'absolute';
-        card.style.top = `${i * 8}px`; // Increased spacing between cards
+        card.style.top = `${i * 18}px`;
         card.style.left = '0';
         card.style.right = '0';
         card.style.zIndex = maxVisible - i;
@@ -405,12 +414,12 @@ function updateNotificationDisplay() {
             card.style.filter = 'blur(0px)';
         } else if (i === 1) {
             card.classList.add('old');
-            card.style.transform = 'translateY(12px) scale(0.98)';
+            card.style.transform = 'translateY(18px) scale(0.97)';
             card.style.opacity = '0.6';
             card.style.filter = 'blur(1px)';
         } else {
             card.classList.add('older');
-            card.style.transform = 'translateY(24px) scale(0.96)';
+            card.style.transform = 'translateY(36px) scale(0.94)';
             card.style.opacity = '0.4';
             card.style.filter = 'blur(2px)';
         }
@@ -492,7 +501,6 @@ function init() {
     // Set intervals
     setInterval(updateTimeDate, 1000);
     setInterval(updateTheme, 60 * 1000);
-    setInterval(cycleNotification, NOTIFICATION_CYCLE_INTERVAL);
     
     // Add click event to time to toggle seconds display
     timeElement.addEventListener('click', () => {
@@ -533,6 +541,7 @@ function init() {
     const btnTheme = document.getElementById('btnTheme');
     const btnStart = document.getElementById('btnStart');
     const btnRefresh = document.getElementById('btnRefresh');
+    const openStartInline = document.getElementById('openStartInline');
     const startMenu = document.getElementById('startMenu');
     const overlay = document.getElementById('overlay');
     const siteGrid = document.getElementById('siteGrid');
@@ -556,6 +565,7 @@ function init() {
     };
     const toggleStart = () => startMenu.hidden ? openStart() : closeStart();
     window.toggleStartMenu = toggleStart;
+    if (openStartInline) openStartInline.addEventListener('click', openStart);
     if (startMenu && overlay) {
         overlay.addEventListener('click', closeStart);
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !startMenu.hidden) closeStart(); });
@@ -630,14 +640,6 @@ function init() {
         // Recompute on resize for responsive cols
         window.addEventListener('resize', () => { renderPage(); });
 
-        if (siteSearch) {
-            siteSearch.addEventListener('input', () => {
-                const q = siteSearch.value.trim().toLowerCase();
-                if (!q) return render(POPULAR_SITES);
-                const filtered = POPULAR_SITES.filter(s => s.title.toLowerCase().includes(q) || s.url.toLowerCase().includes(q));
-                render(filtered);
-            });
-        }
     }
 
     // Make weather widget open Zoom Earth on click / keyboard

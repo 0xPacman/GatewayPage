@@ -6,74 +6,81 @@
     <title>Gateway</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css" />
-    <meta name="theme-color" content="#0f1115" />
+    <meta name="theme-color" content="#f5f2ea" />
 </head>
 <body>
-    <!-- Ambient dynamic background shapes -->
-    <div class="background-effects" aria-hidden="true">
-        <div class="orb orb-a"></div>
-        <div class="orb orb-b"></div>
-        <div class="orb orb-c"></div>
-        <!-- Whimsical layered bokeh dots -->
-        <div class="bokeh" aria-hidden="true">
-            <span class="bokeh-dot d1"></span>
-            <span class="bokeh-dot d2"></span>
-            <span class="bokeh-dot d3"></span>
-            <span class="bokeh-dot d4"></span>
-            <span class="bokeh-dot d5"></span>
-        </div>
-        <div class="noise-layer"></div>
+    <div class="page-shell" aria-hidden="true">
+        <div class="grid-field"></div>
+        <div class="sun-disc"></div>
     </div>
 
-    <!-- Removed top menu bar as per user request -->
-
     <main class="container">
-        <section id="center-widget" class="glass-card depth-xl" aria-label="Clock and weather widget">
-            <div class="widget-inner">
-                <div id="time" aria-live="polite">00:00</div>
-                <div id="date">Loading...</div>
-                <div id="weather" aria-live="polite">
-                    <i class="fas fa-spinner fa-spin"></i> Loading weather...
-                </div>
+        <section class="workspace" aria-label="Gateway workspace">
+            <div class="status-strip" aria-label="Gateway status">
+                <span class="status-mark"></span>
+                <span>Gateway</span>
+                <span id="systemState">Ready</span>
             </div>
+
+            <section id="center-widget" class="time-panel" aria-label="Clock and weather widget">
+                <p class="panel-kicker">Local Station</p>
+                <div class="widget-inner">
+                    <div id="time" aria-live="polite">00:00</div>
+                    <div id="date">Loading...</div>
+                    <button id="weather" class="weather-chip" type="button" aria-live="polite">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Loading weather...</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="launch-preview" aria-label="Quick launch preview">
+                <div>
+                    <p class="panel-kicker">Launch Deck</p>
+                    <h1>Start from one clean command surface.</h1>
+                </div>
+                <button id="openStartInline" class="primary-action" type="button">
+                    <i class="fas fa-compass" aria-hidden="true"></i>
+                    Open
+                </button>
+            </section>
         </section>
 
         <aside id="notifications-container" class="notification-stack" aria-label="Live Hacker News feed">
-            <!-- Initial skeleton placeholder -->
             <div class="notification-card" id="hn-skeleton">
                 <div class="notification-skeleton">
-                    <div class="skeleton-bar" style="width:55%"></div>
-                    <div class="skeleton-bar" style="width:82%"></div>
-                    <div class="skeleton-bar" style="width:40%"></div>
+                    <div class="skeleton-bar wide"></div>
+                    <div class="skeleton-bar"></div>
+                    <div class="skeleton-bar short"></div>
                 </div>
             </div>
         </aside>
     </main>
 
-    <!-- Taskbar with 3 buttons: theme, start, refresh -->
-    <div class="taskbar" role="toolbar" aria-label="Taskbar">
+    <div class="taskbar" role="toolbar" aria-label="Gateway controls">
         <button id="btnTheme" class="task-btn" title="Toggle theme" aria-label="Toggle theme" onclick="window.toggleTheme && window.toggleTheme()">
-            <i class="fas fa-moon" aria-hidden="true"></i>
+            <i class="fas fa-circle-half-stroke" aria-hidden="true"></i>
         </button>
-        <button id="btnStart" class="task-btn start-btn" title="Open start menu" aria-haspopup="dialog" aria-expanded="false" aria-controls="startMenu" onclick="window.toggleStartMenu && window.toggleStartMenu()">
-            <i class="fas fa-globe" aria-hidden="true"></i>
+        <button id="btnStart" class="task-btn start-btn" title="Open launch deck" aria-haspopup="dialog" aria-expanded="false" aria-controls="startMenu" onclick="window.toggleStartMenu && window.toggleStartMenu()">
+            <i class="fas fa-grip" aria-hidden="true"></i>
         </button>
         <button id="btnRefresh" class="task-btn" title="Refresh" aria-label="Refresh" onclick="window.doRefresh && window.doRefresh()">
             <i class="fas fa-rotate" aria-hidden="true"></i>
         </button>
     </div>
 
-    <!-- Backdrop overlay for start menu -->
     <div id="overlay" class="overlay" hidden></div>
 
-    <!-- Windows 12 inspired Start Menu -->
     <section id="startMenu" class="start-menu" role="dialog" aria-modal="true" aria-labelledby="startTitle" hidden>
         <div class="start-inner">
             <div class="start-header">
-                <h2 id="startTitle">Quick Launch</h2>
+                <div>
+                    <p class="panel-kicker">Command Center</p>
+                    <h2 id="startTitle">Quick Launch</h2>
+                </div>
                 <div class="start-search">
                     <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
                     <input id="siteSearch" type="search" placeholder="Search sites..." aria-label="Search sites" />
@@ -88,32 +95,8 @@
         </div>
     </section>
 
-    <div id="toastContainer" class="toast-container"></div>
-
-    <div class="notification-card ad">
-        <script type="text/javascript">
-            atOptions = {
-                'key' : '65681013033f889f227762bfe76db7dc',
-                'format' : 'iframe',
-                'height' : 60,
-                'width' : 468,
-                'params' : {}
-            };
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/65681013033f889f227762bfe76db7dc/invoke.js"></script>
-    </div>
-
-    <!-- Inline SVG filter: subtle liquid glass distortion -->
-    <svg width="0" height="0" style="position:absolute">
-        <filter id="lg-distort-1" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox">
-            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="11" result="noise" />
-            <feGaussianBlur in="noise" stdDeviation="1.2" result="soft" />
-            <feColorMatrix in="soft" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="map" />
-            <feDisplacementMap in="SourceGraphic" in2="map" scale="85" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-    </svg>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
     <script src="app.js"></script>
 </body>
 </html>
-
